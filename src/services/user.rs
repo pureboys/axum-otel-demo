@@ -1,5 +1,4 @@
-use sea_orm::DatabaseConnection;
-
+use crate::app::AppState;
 use crate::dto::user::{CreateUserRequest, UpdateUserRequest, UserResponse};
 use crate::error::AppError;
 use crate::repositories::user::UserRepository;
@@ -8,14 +7,14 @@ pub struct UserService;
 
 impl UserService {
     /// 获取全部用户
-    pub async fn list_users(db: &DatabaseConnection) -> Result<Vec<UserResponse>, AppError> {
-        let users = UserRepository::find_all(db).await?;
+    pub async fn list_users(state: &AppState) -> Result<Vec<UserResponse>, AppError> {
+        let users = UserRepository::find_all(&state.db).await?;
         Ok(users.into_iter().map(UserResponse::from).collect())
     }
 
     /// 按 ID 获取用户
-    pub async fn get_user(db: &DatabaseConnection, id: i32) -> Result<UserResponse, AppError> {
-        let user = UserRepository::find_by_id(db, id)
+    pub async fn get_user(state: &AppState, id: i32) -> Result<UserResponse, AppError> {
+        let user = UserRepository::find_by_id(&state.db, id)
             .await?
             .ok_or_else(|| AppError::NotFound(format!("User with id {} not found", id)))?;
         Ok(UserResponse::from(user))
@@ -23,7 +22,7 @@ impl UserService {
 
     /// 创建用户
     pub async fn create_user(
-        db: &DatabaseConnection,
+        state: &AppState,
         req: CreateUserRequest,
     ) -> Result<UserResponse, AppError> {
         // 校验
@@ -35,7 +34,7 @@ impl UserService {
         }
 
         // 检查用户名是否已存在
-        if UserRepository::find_by_username(db, &req.username)
+        if UserRepository::find_by_username(&state.db, &req.username)
             .await?
             .is_some()
         {
@@ -45,17 +44,17 @@ impl UserService {
             )));
         }
 
-        let user = UserRepository::create(db, req.username, req.email).await?;
+        let user = UserRepository::create(&state.db, req.username, req.email).await?;
         Ok(UserResponse::from(user))
     }
 
     /// 更新用户
     pub async fn update_user(
-        db: &DatabaseConnection,
+        state: &AppState,
         id: i32,
         req: UpdateUserRequest,
     ) -> Result<UserResponse, AppError> {
-        let existing = UserRepository::find_by_id(db, id)
+        let existing = UserRepository::find_by_id(&state.db, id)
             .await?
             .ok_or_else(|| AppError::NotFound(format!("User with id {} not found", id)))?;
 
@@ -65,7 +64,7 @@ impl UserService {
                 return Err(AppError::Validation("Username cannot be empty".into()));
             }
             if new_username != &existing.username {
-                if UserRepository::find_by_username(db, new_username)
+                if UserRepository::find_by_username(&state.db, new_username)
                     .await?
                     .is_some()
                 {
@@ -78,13 +77,13 @@ impl UserService {
         }
 
         let active_model: crate::models::user::ActiveModel = existing.into();
-        let user = UserRepository::update(db, active_model, req.username, req.email).await?;
+        let user = UserRepository::update(&state.db, active_model, req.username, req.email).await?;
         Ok(UserResponse::from(user))
     }
 
     /// 删除用户
-    pub async fn delete_user(db: &DatabaseConnection, id: i32) -> Result<(), AppError> {
-        let result = UserRepository::delete(db, id).await?;
+    pub async fn delete_user(state: &AppState, id: i32) -> Result<(), AppError> {
+        let result = UserRepository::delete(&state.db, id).await?;
         if result.rows_affected == 0 {
             return Err(AppError::NotFound(format!("User with id {} not found", id)));
         }

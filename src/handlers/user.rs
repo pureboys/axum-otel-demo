@@ -20,7 +20,7 @@ pub async fn root() -> impl IntoResponse {
 pub async fn list_users(
     State(state): State<AppState>,
 ) -> Result<impl IntoResponse, AppError> {
-    let users = UserService::list_users(&state.db).await?;
+    let users = UserService::list_users(&state).await?;
     Ok(ApiResponse::success(users))
 }
 
@@ -30,7 +30,7 @@ pub async fn get_user(
     State(state): State<AppState>,
     Path(id): Path<i32>,
 ) -> Result<impl IntoResponse, AppError> {
-    let user = UserService::get_user(&state.db, id).await?;
+    let user = UserService::get_user(&state, id).await?;
     Ok(ApiResponse::success(user))
 }
 
@@ -41,7 +41,7 @@ pub async fn create_user(
     Json(payload): Json<CreateUserRequest>,
 ) -> Result<impl IntoResponse, AppError> {
     tracing::debug!(username = %payload.username, "Creating new user");
-    let user = UserService::create_user(&state.db, payload).await?;
+    let user = UserService::create_user(&state, payload).await?;
     tracing::info!(user_id = user.id, "User created successfully");
     Ok(ApiResponse::success_with_status(user, StatusCode::CREATED))
 }
@@ -53,7 +53,7 @@ pub async fn update_user(
     Path(id): Path<i32>,
     Json(payload): Json<UpdateUserRequest>,
 ) -> Result<impl IntoResponse, AppError> {
-    let user = UserService::update_user(&state.db, id, payload).await?;
+    let user = UserService::update_user(&state, id, payload).await?;
     tracing::info!(user_id = user.id, "User updated");
     Ok(ApiResponse::success(user))
 }
@@ -64,7 +64,7 @@ pub async fn delete_user(
     State(state): State<AppState>,
     Path(id): Path<i32>,
 ) -> Result<impl IntoResponse, AppError> {
-    UserService::delete_user(&state.db, id).await?;
+    UserService::delete_user(&state, id).await?;
     tracing::info!(user_id = id, "User deleted");
     Ok(ApiResponse::<()>::success_empty())
 }
