@@ -1,26 +1,27 @@
 use axum::extract::{Path, State};
 use axum::http::StatusCode;
+use axum::response::IntoResponse;
 use axum::Json;
 
 use crate::app::AppState;
-use crate::dto::user::{CreateUserRequest, UpdateUserRequest, UserResponse};
+use crate::dto::response::ApiResponse;
+use crate::dto::user::{CreateUserRequest, UpdateUserRequest};
 use crate::error::AppError;
 use crate::services::user::UserService;
 
 /// GET /
 #[tracing::instrument(skip_all)]
-pub async fn root() -> &'static str {
-    tracing::debug!("Handling root request");
-    "Hello, World!"
+pub async fn root() -> impl IntoResponse {
+    ApiResponse::success("Hello, World!")
 }
 
 /// GET /users
 #[tracing::instrument(skip_all)]
 pub async fn list_users(
     State(state): State<AppState>,
-) -> Result<Json<Vec<UserResponse>>, AppError> {
+) -> Result<impl IntoResponse, AppError> {
     let users = UserService::list_users(&state.db).await?;
-    Ok(Json(users))
+    Ok(ApiResponse::success(users))
 }
 
 /// GET /users/:id
@@ -28,9 +29,9 @@ pub async fn list_users(
 pub async fn get_user(
     State(state): State<AppState>,
     Path(id): Path<i32>,
-) -> Result<Json<UserResponse>, AppError> {
+) -> Result<impl IntoResponse, AppError> {
     let user = UserService::get_user(&state.db, id).await?;
-    Ok(Json(user))
+    Ok(ApiResponse::success(user))
 }
 
 /// POST /users
@@ -38,11 +39,11 @@ pub async fn get_user(
 pub async fn create_user(
     State(state): State<AppState>,
     Json(payload): Json<CreateUserRequest>,
-) -> Result<(StatusCode, Json<UserResponse>), AppError> {
+) -> Result<impl IntoResponse, AppError> {
     tracing::debug!(username = %payload.username, "Creating new user");
     let user = UserService::create_user(&state.db, payload).await?;
     tracing::info!(user_id = user.id, "User created successfully");
-    Ok((StatusCode::CREATED, Json(user)))
+    Ok(ApiResponse::success_with_status(user, StatusCode::CREATED))
 }
 
 /// PUT /users/:id
@@ -51,10 +52,10 @@ pub async fn update_user(
     State(state): State<AppState>,
     Path(id): Path<i32>,
     Json(payload): Json<UpdateUserRequest>,
-) -> Result<Json<UserResponse>, AppError> {
+) -> Result<impl IntoResponse, AppError> {
     let user = UserService::update_user(&state.db, id, payload).await?;
     tracing::info!(user_id = user.id, "User updated");
-    Ok(Json(user))
+    Ok(ApiResponse::success(user))
 }
 
 /// DELETE /users/:id
@@ -62,8 +63,8 @@ pub async fn update_user(
 pub async fn delete_user(
     State(state): State<AppState>,
     Path(id): Path<i32>,
-) -> Result<StatusCode, AppError> {
+) -> Result<impl IntoResponse, AppError> {
     UserService::delete_user(&state.db, id).await?;
     tracing::info!(user_id = id, "User deleted");
-    Ok(StatusCode::NO_CONTENT)
+    Ok(ApiResponse::<()>::success_empty())
 }

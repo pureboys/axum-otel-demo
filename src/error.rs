@@ -1,7 +1,8 @@
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use axum::Json;
-use serde_json::json;
+
+use crate::dto::response::ApiResponse;
 
 /// 统一错误类型
 #[derive(Debug)]
@@ -14,17 +15,17 @@ pub enum AppError {
 
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
-        let (status, message) = match &self {
-            AppError::NotFound(msg) => (StatusCode::NOT_FOUND, msg.clone()),
-            AppError::Validation(msg) => (StatusCode::BAD_REQUEST, msg.clone()),
-            AppError::Internal(msg) => (StatusCode::INTERNAL_SERVER_ERROR, msg.clone()),
+        let (status, code, message) = match &self {
+            AppError::NotFound(msg) => (StatusCode::NOT_FOUND, 404, msg.clone()),
+            AppError::Validation(msg) => (StatusCode::BAD_REQUEST, 400, msg.clone()),
+            AppError::Internal(msg) => (StatusCode::INTERNAL_SERVER_ERROR, 500, msg.clone()),
             AppError::Database(err) => {
                 tracing::error!(error = %err, "Database error");
-                (StatusCode::INTERNAL_SERVER_ERROR, "Internal server error".into())
+                (StatusCode::INTERNAL_SERVER_ERROR, 500, "Internal server error".into())
             }
         };
 
-        (status, Json(json!({ "error": message }))).into_response()
+        (status, Json(ApiResponse::<()>::error(code, message))).into_response()
     }
 }
 
