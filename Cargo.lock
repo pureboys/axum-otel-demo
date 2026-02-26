@@ -361,7 +361,6 @@ version = "0.1.0"
 dependencies = [
  "axum",
  "http-body-util",
- "log",
  "opentelemetry",
  "opentelemetry-appender-tracing",
  "opentelemetry-otlp",

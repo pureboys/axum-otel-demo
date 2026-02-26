@@ -32,6 +32,6 @@ sea-orm = { version = "2.0.0-rc", features = [
     "runtime-tokio-rustls",
     "macros",
     "debug-print",
+    "tracing-spans",
 ] }
-log = "0.4.29"
 http-body-util = "0.1.3"
