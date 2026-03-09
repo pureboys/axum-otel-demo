@@ -1,0 +1,10 @@
+[server]
+addr = "0.0.0.0:8000"
+
+[database]
+url = "sqlite:./demo.db?mode=rwc"
+
+[telemetry]
+otel_enabled = true
+otel_endpoint = "http://localhost:4317"
+pyroscope_endpoint = "http://localhost:4040"

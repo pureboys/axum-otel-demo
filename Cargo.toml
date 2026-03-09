@@ -35,3 +35,7 @@ sea-orm = { version = "2.0.0-rc", features = [
     "tracing-spans",
 ] }
 http-body-util = "0.1.3"
+
+# 配置文件与 CLI
+config = { version = "0.15", features = ["toml"] }
+clap = { version = "4", features = ["derive"] }

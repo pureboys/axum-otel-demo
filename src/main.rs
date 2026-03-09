@@ -1,4 +1,5 @@
 mod app;
+mod cli;
 mod config;
 mod db;
 mod dto;
@@ -11,23 +12,25 @@ mod services;
 mod shutdown;
 mod telemetry;
 
+use clap::Parser;
 use tokio::net::TcpListener;
 
 use crate::app::AppState;
+use crate::cli::Cli;
 use crate::config::AppConfig;
 
 #[tokio::main]
 async fn main() {
-    // 读取配置
-    let config = AppConfig::from_env();
+    let cli = Cli::parse();
+    let config = AppConfig::from_file(&cli.env);
 
     // 初始化可观测性（tracing + logging + profiling）
-    let telemetry_guard = telemetry::init_telemetry(&config);
+    let telemetry_guard = telemetry::init_telemetry(&config.telemetry);
 
     tracing::info!("Starting server with OpenTelemetry tracing, logging and Pyroscope profiling enabled");
 
     // 初始化数据库
-    let db = db::init_db(&config.database_url)
+    let db = db::init_db(&config.database.url)
         .await
         .expect("Failed to initialize database");
     tracing::info!("Database initialized");
@@ -37,7 +40,7 @@ async fn main() {
     let router = app::create_router(state);
 
     // 启动服务器
-    let listener = TcpListener::bind(&config.server_addr).await.unwrap();
+    let listener = TcpListener::bind(&config.server.addr).await.unwrap();
     tracing::info!("Server listening on {}", listener.local_addr().unwrap());
 
     axum::serve(listener, router)

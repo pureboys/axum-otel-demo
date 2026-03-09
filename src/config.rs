@@ -1,22 +1,53 @@
-/// 应用配置，从环境变量读取，提供默认值
+use std::sync::OnceLock;
+
+use config::{Config, File};
+use serde::Deserialize;
+
+/// 全局原始配置对象，业务代码可直接按 key 动态取值
+pub static RAW_CONFIG: OnceLock<Config> = OnceLock::new();
+
+#[derive(Debug, Deserialize)]
 pub struct AppConfig {
-    pub server_addr: String,
-    pub database_url: String,
+    pub server: ServerConfig,
+    pub database: DatabaseConfig,
+    pub telemetry: TelemetryConfig,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct ServerConfig {
+    pub addr: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct DatabaseConfig {
+    pub url: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct TelemetryConfig {
+    #[serde(default = "default_true")]
+    pub otel_enabled: bool,
     pub otel_endpoint: String,
     pub pyroscope_endpoint: String,
 }
 
+fn default_true() -> bool {
+    true
+}
+
 impl AppConfig {
-    pub fn from_env() -> Self {
-        Self {
-            server_addr: std::env::var("SERVER_ADDR")
-                .unwrap_or_else(|_| "0.0.0.0:8000".into()),
-            database_url: std::env::var("DATABASE_URL")
-                .unwrap_or_else(|_| "sqlite:./demo.db?mode=rwc".into()),
-            otel_endpoint: std::env::var("OTEL_ENDPOINT")
-                .unwrap_or_else(|_| "http://localhost:4317".into()),
-            pyroscope_endpoint: std::env::var("PYROSCOPE_ENDPOINT")
-                .unwrap_or_else(|_| "http://localhost:4040".into()),
-        }
+    pub fn from_file(env: &str) -> Self {
+        let config = Config::builder()
+            .add_source(File::with_name(&format!("config/{env}")))
+            .build()
+            .unwrap_or_else(|e| panic!("Failed to load config for env '{env}': {e}"));
+
+        RAW_CONFIG
+            .set(config.clone())
+            .expect("Config already initialized");
+
+        config
+            .try_deserialize()
+            .unwrap_or_else(|e| panic!("Failed to deserialize config: {e}"))
     }
 }
