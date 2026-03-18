@@ -1,14 +1,13 @@
+mod api;
 mod app;
 mod cli;
 mod config;
 mod db;
 mod dto;
 mod error;
-mod handlers;
 mod middleware;
 mod models;
 mod repositories;
-mod services;
 mod shutdown;
 mod telemetry;
 
@@ -27,7 +26,9 @@ async fn main() {
     // 初始化可观测性（tracing + logging + profiling）
     let telemetry_guard = telemetry::init_telemetry(&config.telemetry);
 
-    tracing::info!("Starting server with OpenTelemetry tracing, logging and Pyroscope profiling enabled");
+    tracing::info!(
+        "Starting server with OpenTelemetry tracing, logging and Pyroscope profiling enabled"
+    );
 
     // 初始化数据库
     let db = db::init_db(&config.database.url)

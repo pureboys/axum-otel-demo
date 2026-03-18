@@ -7,10 +7,12 @@ use serde::Deserialize;
 pub static RAW_CONFIG: OnceLock<Config> = OnceLock::new();
 
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 pub struct AppConfig {
     pub server: ServerConfig,
     pub database: DatabaseConfig,
     pub telemetry: TelemetryConfig,
+    pub jwt: JwtConfig,
 }
 
 #[derive(Debug, Deserialize)]
@@ -33,6 +35,13 @@ pub struct TelemetryConfig {
 
 fn default_true() -> bool {
     true
+}
+
+#[derive(Debug, Deserialize)]
+#[allow(dead_code)]
+pub struct JwtConfig {
+    pub secret: String,
+    pub expire_seconds: i64,
 }
 
 impl AppConfig {

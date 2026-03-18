@@ -5,6 +5,10 @@ addr = "0.0.0.0:8000"
 url = "sqlite:./demo.db?mode=rwc"
 
 [telemetry]
-otel_enabled = true
+otel_enabled = false
 otel_endpoint = "http://localhost:4317"
 pyroscope_endpoint = "http://localhost:4040"
+
+[jwt]
+secret = "your-secret-key-change-in-production"
+expire_seconds = 86400

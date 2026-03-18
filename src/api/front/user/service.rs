@@ -1,7 +1,8 @@
 use crate::app::AppState;
-use crate::dto::user::{CreateUserRequest, UpdateUserRequest, UserResponse};
 use crate::error::AppError;
 use crate::repositories::user::UserRepository;
+
+use super::dto::{CreateUserRequest, UpdateUserRequest, UserResponse};
 
 pub struct UserService;
 

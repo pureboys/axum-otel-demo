@@ -11,6 +11,10 @@ pub enum AppError {
     Validation(String),
     Internal(String),
     Database(sea_orm::DbErr),
+    /// 认证失败
+    AuthFailed(String),
+    /// 未授权
+    Unauthorized(String),
 }
 
 impl IntoResponse for AppError {
@@ -23,6 +27,8 @@ impl IntoResponse for AppError {
                 tracing::error!(error = %err, "Database error");
                 (StatusCode::INTERNAL_SERVER_ERROR, 500, "Internal server error".into())
             }
+            AppError::AuthFailed(msg) => (StatusCode::UNAUTHORIZED, 401, msg.clone()),
+            AppError::Unauthorized(msg) => (StatusCode::UNAUTHORIZED, 401, msg.clone()),
         };
 
         (status, Json(ApiResponse::<()>::error(code, message))).into_response()

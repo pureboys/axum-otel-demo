@@ -1,3 +1,8 @@
+//! 前台用户模块 - handler
+
+pub mod dto;
+pub mod service;
+
 use axum::extract::{Path, State};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
@@ -5,15 +10,10 @@ use axum::Json;
 
 use crate::app::AppState;
 use crate::dto::response::ApiResponse;
-use crate::dto::user::{CreateUserRequest, UpdateUserRequest};
 use crate::error::AppError;
-use crate::services::user::UserService;
 
-/// GET /
-#[tracing::instrument(skip_all)]
-pub async fn root() -> impl IntoResponse {
-    ApiResponse::success("Hello, World!")
-}
+use dto::{CreateUserRequest, UpdateUserRequest};
+use service::UserService;
 
 /// GET /users
 #[tracing::instrument(skip_all)]
@@ -67,4 +67,16 @@ pub async fn delete_user(
     UserService::delete_user(&state, id).await?;
     tracing::info!(user_id = id, "User deleted");
     Ok(ApiResponse::<()>::success_empty())
+}
+
+/// 构建前台用户模块路由
+pub fn routes() -> axum::Router<AppState> {
+    axum::Router::new()
+        .route("/users", axum::routing::get(list_users).post(create_user))
+        .route(
+            "/users/{id}",
+            axum::routing::get(get_user)
+                .put(update_user)
+                .delete(delete_user),
+        )
 }

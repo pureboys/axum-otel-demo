@@ -8,3 +8,7 @@ url = "sqlite:./demo.db?mode=rwc"
 otel_enabled = true
 otel_endpoint = "http://localhost:4317"
 pyroscope_endpoint = "http://localhost:4040"
+
+[jwt]
+secret = "change-this-to-a-secure-secret-in-production"
+expire_seconds = 86400
