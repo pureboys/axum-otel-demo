@@ -2,6 +2,9 @@
 
 pub mod auth;
 pub mod user;
+pub mod product;
+pub mod category;
+pub mod tag;
 
 use axum::middleware;
 use axum::Router;
@@ -20,5 +23,8 @@ pub fn protected_routes(state: AppState) -> Router<AppState> {
     Router::new()
         .merge(auth::auth_protected_routes())
         .merge(user::routes())
+        .merge(product::routes())
+        .merge(category::routes())
+        .merge(tag::routes())
         .layer(middleware::from_fn_with_state(state, auth_middleware::auth_middleware))
 }

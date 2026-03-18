@@ -1,0 +1,115 @@
+//! 后台产品管理模块
+
+mod dto;
+mod service;
+
+use axum::extract::State;
+use axum::response::IntoResponse;
+use axum::routing::{get, post};
+use axum::Router;
+
+use crate::app::AppState;
+use crate::dto::response::ApiResponse;
+use crate::error::AppError;
+use service::ProductService;
+use dto::{CreateProductRequest, UpdateProductRequest, SetProductTagsRequest};
+
+/// GET /admin/products - 获取所有产品
+#[tracing::instrument(skip_all)]
+pub async fn list_products(
+    State(state): State<AppState>,
+) -> Result<impl IntoResponse, AppError> {
+    let products = ProductService::list_products(&state).await?;
+    Ok(ApiResponse::success(products))
+}
+
+/// GET /admin/products/:id - 获取产品详情
+#[tracing::instrument(skip(state))]
+pub async fn get_product(
+    State(state): State<AppState>,
+    axum::extract::Path(id): axum::extract::Path<i32>,
+) -> Result<impl IntoResponse, AppError> {
+    let product = ProductService::get_product(&state, id).await?;
+    Ok(ApiResponse::success(product))
+}
+
+/// GET /admin/products/:id/tags - 获取产品详情（含标签）
+#[tracing::instrument(skip(state))]
+pub async fn get_product_with_tags(
+    State(state): State<AppState>,
+    axum::extract::Path(id): axum::extract::Path<i32>,
+) -> Result<impl IntoResponse, AppError> {
+    let product = ProductService::get_product_with_tags(&state, id).await?;
+    Ok(ApiResponse::success(product))
+}
+
+/// POST /admin/products - 创建产品
+#[tracing::instrument(skip_all)]
+pub async fn create_product(
+    State(state): State<AppState>,
+    axum::Json(payload): axum::Json<CreateProductRequest>,
+) -> Result<impl IntoResponse, AppError> {
+    let product = ProductService::create_product(&state, payload).await?;
+    Ok(ApiResponse::success(product))
+}
+
+/// PUT /admin/products/:id - 更新产品
+#[tracing::instrument(skip(state, payload))]
+pub async fn update_product(
+    State(state): State<AppState>,
+    axum::extract::Path(id): axum::extract::Path<i32>,
+    axum::Json(payload): axum::Json<UpdateProductRequest>,
+) -> Result<impl IntoResponse, AppError> {
+    let product = ProductService::update_product(&state, id, payload).await?;
+    Ok(ApiResponse::success(product))
+}
+
+/// DELETE /admin/products/:id - 删除产品
+#[tracing::instrument(skip(state))]
+pub async fn delete_product(
+    State(state): State<AppState>,
+    axum::extract::Path(id): axum::extract::Path<i32>,
+) -> Result<impl IntoResponse, AppError> {
+    ProductService::delete_product(&state, id).await?;
+    Ok(ApiResponse::<()>::success_empty())
+}
+
+/// PUT /admin/products/:id/tags - 设置产品标签
+#[tracing::instrument(skip(state, payload))]
+pub async fn set_product_tags(
+    State(state): State<AppState>,
+    axum::extract::Path(id): axum::extract::Path<i32>,
+    axum::Json(payload): axum::Json<SetProductTagsRequest>,
+) -> Result<impl IntoResponse, AppError> {
+    let tags = ProductService::set_product_tags(&state, id, payload).await?;
+    Ok(ApiResponse::success(tags))
+}
+
+/// POST /admin/products/:id/tags/:tag_id - 添加产品标签
+#[tracing::instrument(skip(state))]
+pub async fn add_product_tag(
+    State(state): State<AppState>,
+    axum::extract::Path((product_id, tag_id)): axum::extract::Path<(i32, i32)>,
+) -> Result<impl IntoResponse, AppError> {
+    let tag = ProductService::add_product_tag(&state, product_id, tag_id).await?;
+    Ok(ApiResponse::success(tag))
+}
+
+/// DELETE /admin/products/:id/tags/:tag_id - 移除产品标签
+#[tracing::instrument(skip(state))]
+pub async fn remove_product_tag(
+    State(state): State<AppState>,
+    axum::extract::Path((product_id, tag_id)): axum::extract::Path<(i32, i32)>,
+) -> Result<impl IntoResponse, AppError> {
+    ProductService::remove_product_tag(&state, product_id, tag_id).await?;
+    Ok(ApiResponse::<()>::success_empty())
+}
+
+/// 构建后台产品管理路由
+pub fn routes() -> Router<AppState> {
+    Router::new()
+        .route("/products", get(list_products).post(create_product))
+        .route("/products/{id}", get(get_product).put(update_product).delete(delete_product))
+        .route("/products/{id}/tags", get(get_product_with_tags).put(set_product_tags))
+        .route("/products/{product_id}/tags/{tag_id}", post(add_product_tag).delete(remove_product_tag))
+}
