@@ -64,14 +64,14 @@ pub async fn refresh(
     Ok(ApiResponse::success(response))
 }
 
-/// 构建公开路由（无需认证）
-pub fn public_routes() -> Router<AppState> {
+/// 构建认证公开路由（无需认证）
+pub fn auth_public_routes() -> Router<AppState> {
     Router::new()
         .route("/login", post(login))
 }
 
-/// 构建受保护路由（需认证）
-pub fn protected_routes() -> Router<AppState> {
+/// 构建认证受保护路由（需认证）
+pub fn auth_protected_routes() -> Router<AppState> {
     Router::new()
         .route("/logout", post(logout))
         .route("/info", get(info))
