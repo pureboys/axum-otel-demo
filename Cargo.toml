@@ -44,3 +44,4 @@ clap = { version = "4", features = ["derive"] }
 jsonwebtoken = "9"
 bcrypt = "0.15"
 chrono = "0.4"
+chrono-tz = "0.9"

@@ -10,6 +10,7 @@ mod models;
 mod repositories;
 mod shutdown;
 mod telemetry;
+mod utils;
 
 use clap::Parser;
 use tokio::net::TcpListener;

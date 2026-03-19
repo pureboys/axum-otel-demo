@@ -56,8 +56,8 @@ impl CategoryRepository {
             slug: Set(slug),
             description: Set(description),
             parent_id: Set(parent_id),
-            created_at: Set(chrono::Utc::now().naive_utc()),
-            updated_at: Set(chrono::Utc::now().naive_utc()),
+            created_at: Set(crate::utils::time::now()),
+            updated_at: Set(crate::utils::time::now()),
             ..Default::default()
         };
         model.insert(db).await
@@ -84,7 +84,7 @@ impl CategoryRepository {
         if let Some(parent_id) = parent_id {
             model.parent_id = Set(parent_id);
         }
-        model.updated_at = Set(chrono::Utc::now().naive_utc());
+        model.updated_at = Set(crate::utils::time::now());
         model.update(db).await
     }
 

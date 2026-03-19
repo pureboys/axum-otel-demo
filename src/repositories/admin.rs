@@ -35,7 +35,7 @@ impl AdminRepository {
             .ok_or_else(|| DbErr::RecordNotFound(format!("Admin with id {} not found", id)))?;
 
         let mut active_model = admin.into_active_model();
-        active_model.last_login_at = sea_orm::ActiveValue::Set(Some(chrono::Utc::now().naive_utc()));
+        active_model.last_login_at = sea_orm::ActiveValue::Set(Some(crate::utils::time::now()));
         active_model.update(db).await
     }
 }

@@ -57,8 +57,8 @@ impl ProductRepository {
             category_id: Set(category_id),
             image_url: Set(image_url),
             status: Set(status),
-            created_at: Set(chrono::Utc::now().naive_utc()),
-            updated_at: Set(chrono::Utc::now().naive_utc()),
+            created_at: Set(crate::utils::time::now()),
+            updated_at: Set(crate::utils::time::now()),
             ..Default::default()
         };
         model.insert(db).await
@@ -97,7 +97,7 @@ impl ProductRepository {
         if let Some(status) = status {
             model.status = Set(status);
         }
-        model.updated_at = Set(chrono::Utc::now().naive_utc());
+        model.updated_at = Set(crate::utils::time::now());
         model.update(db).await
     }
 

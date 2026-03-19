@@ -46,8 +46,8 @@ impl TagRepository {
         let model = tag::ActiveModel {
             name: Set(name),
             slug: Set(slug),
-            created_at: Set(chrono::Utc::now().naive_utc()),
-            updated_at: Set(chrono::Utc::now().naive_utc()),
+            created_at: Set(crate::utils::time::now()),
+            updated_at: Set(crate::utils::time::now()),
             ..Default::default()
         };
         model.insert(db).await
@@ -66,7 +66,7 @@ impl TagRepository {
         if let Some(slug) = slug {
             model.slug = Set(slug);
         }
-        model.updated_at = Set(chrono::Utc::now().naive_utc());
+        model.updated_at = Set(crate::utils::time::now());
         model.update(db).await
     }
 
