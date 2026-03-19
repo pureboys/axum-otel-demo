@@ -4,7 +4,6 @@ use sea_orm::DatabaseConnection;
 
 use crate::api::admin;
 use crate::api::common;
-use crate::api::front;
 use crate::middleware::log_bodies;
 
 /// 共享应用状态
@@ -16,8 +15,6 @@ pub struct AppState {
 /// 构建完整的 Router（路由 + 中间件 + 状态注入）
 pub fn create_router(state: AppState) -> Router {
     Router::new()
-        // 前台 API - /api/*
-        .nest("/api", front::routes())
         // 后台公开 API - /api/admin/*
         .nest("/api/admin", admin::public_routes())
         // 后台受保护 API - /api/admin/* (需要认证)

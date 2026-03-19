@@ -4,3 +4,5 @@ pub mod category;
 pub mod tag;
 pub mod product_tag;
 pub mod user;
+pub mod news;
+pub mod page;

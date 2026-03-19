@@ -6,7 +6,7 @@ use crate::error::AppError;
 use crate::repositories::product::ProductRepository;
 use crate::repositories::product_tag::ProductTagRepository;
 use crate::repositories::tag::TagRepository;
-use super::dto::{CreateProductRequest, UpdateProductRequest, ProductResponse, ProductWithTagsResponse, SetProductTagsRequest};
+use super::dto::{CreateProductRequest, UpdateProductRequest, ProductResponse, ProductWithTagsResponse, SetProductTagsRequest, PaginatedProductResponse};
 
 pub struct ProductService;
 
@@ -17,6 +17,32 @@ impl ProductService {
             .await
             .map_err(AppError::from)?;
         Ok(products.into_iter().map(ProductResponse::from).collect())
+    }
+
+    /// 分页获取产品
+    pub async fn list_products_paginated(
+        state: &AppState,
+        page: u32,
+        limit: u32,
+        category_id: Option<i32>,
+        status: Option<i8>,
+    ) -> Result<PaginatedProductResponse, AppError> {
+        let (products, total) = ProductRepository::find_paginated(
+            &state.db,
+            page,
+            limit,
+            category_id,
+            status,
+        )
+        .await
+        .map_err(AppError::from)?;
+
+        Ok(PaginatedProductResponse {
+            items: products.into_iter().map(ProductResponse::from).collect(),
+            total,
+            page,
+            limit,
+        })
     }
 
     /// 获取产品详情
@@ -73,6 +99,8 @@ impl ProductService {
             req.category_id,
             req.image_url,
             req.status.unwrap_or(1),
+            req.meta_title,
+            req.meta_description,
         )
         .await
         .map_err(AppError::from)?;
@@ -104,6 +132,8 @@ impl ProductService {
             req.category_id,
             req.image_url,
             req.status,
+            req.meta_title,
+            req.meta_description,
         )
         .await
         .map_err(AppError::from)?;

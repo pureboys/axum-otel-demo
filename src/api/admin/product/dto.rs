@@ -10,6 +10,10 @@ pub struct CreateProductRequest {
     pub category_id: i32,
     pub image_url: String,
     pub status: Option<i8>,
+    /// SEO 标题
+    pub meta_title: Option<String>,
+    /// SEO 描述
+    pub meta_description: Option<String>,
 }
 
 /// 更新产品请求
@@ -22,6 +26,10 @@ pub struct UpdateProductRequest {
     pub category_id: Option<i32>,
     pub image_url: Option<String>,
     pub status: Option<i8>,
+    /// SEO 标题
+    pub meta_title: Option<Option<String>>,
+    /// SEO 描述
+    pub meta_description: Option<Option<String>>,
 }
 
 /// 设置产品标签请求
@@ -41,6 +49,10 @@ pub struct ProductResponse {
     pub category_id: i32,
     pub image_url: String,
     pub status: i8,
+    /// SEO 标题
+    pub meta_title: Option<String>,
+    /// SEO 描述
+    pub meta_description: Option<String>,
     pub created_at: String,
     pub updated_at: String,
 }
@@ -56,6 +68,8 @@ impl From<crate::models::product::Model> for ProductResponse {
             category_id: model.category_id,
             image_url: model.image_url,
             status: model.status,
+            meta_title: model.meta_title,
+            meta_description: model.meta_description,
             created_at: model.created_at.format("%Y-%m-%d %H:%M:%S").to_string(),
             updated_at: model.updated_at.format("%Y-%m-%d %H:%M:%S").to_string(),
         }
@@ -85,4 +99,13 @@ impl From<crate::models::tag::Model> for TagResponse {
 pub struct ProductWithTagsResponse {
     pub product: ProductResponse,
     pub tags: Vec<TagResponse>,
+}
+
+/// 分页响应
+#[derive(Debug, Serialize)]
+pub struct PaginatedProductResponse {
+    pub items: Vec<ProductResponse>,
+    pub total: u32,
+    pub page: u32,
+    pub limit: u32,
 }

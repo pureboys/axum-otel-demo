@@ -14,6 +14,17 @@ impl CategoryService {
         Ok(categories.into_iter().map(CategoryResponse::from).collect())
     }
 
+    /// 按类型获取分类
+    pub async fn list_categories_by_type(
+        state: &AppState,
+        category_type: &str,
+    ) -> Result<Vec<CategoryResponse>, AppError> {
+        let categories = CategoryRepository::find_by_type(&state.db, category_type)
+            .await
+            .map_err(AppError::from)?;
+        Ok(categories.into_iter().map(CategoryResponse::from).collect())
+    }
+
     /// 获取分类详情
     pub async fn get_category(state: &AppState, id: i32) -> Result<CategoryResponse, AppError> {
         let category = CategoryRepository::find_by_id(&state.db, id)
@@ -33,6 +44,7 @@ impl CategoryService {
             req.name,
             req.slug,
             req.description,
+            req.category_type,
             req.parent_id,
         )
         .await
@@ -58,6 +70,7 @@ impl CategoryService {
             req.name,
             req.slug,
             req.description,
+            req.category_type,
             req.parent_id,
         )
         .await

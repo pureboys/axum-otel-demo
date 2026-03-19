@@ -52,6 +52,7 @@ CREATE TABLE IF NOT EXISTS categories (
     name VARCHAR(100) NOT NULL COMMENT '分类名称',
     slug VARCHAR(100) NOT NULL COMMENT '分类别名',
     description TEXT COMMENT '分类描述',
+    category_type VARCHAR(20) NOT NULL DEFAULT 'product' COMMENT '分类类型: product-商品分类, news-新闻分类',
     parent_id INTEGER COMMENT '父分类ID',
     created_at DATETIME NOT NULL DEFAULT (datetime('now')) COMMENT '创建时间',
     updated_at DATETIME NOT NULL DEFAULT (datetime('now')) COMMENT '更新时间',
@@ -70,6 +71,8 @@ CREATE TABLE IF NOT EXISTS products (
     category_id INTEGER NOT NULL COMMENT '分类ID',
     image_url VARCHAR(500) COMMENT '商品图片URL',
     status TINYINT NOT NULL DEFAULT 1 COMMENT '状态: 0-下架, 1-上架',
+    meta_title VARCHAR(200) COMMENT 'SEO标题',
+    meta_description TEXT COMMENT 'SEO描述',
     created_at DATETIME NOT NULL DEFAULT (datetime('now')) COMMENT '创建时间',
     updated_at DATETIME NOT NULL DEFAULT (datetime('now')) COMMENT '更新时间',
     FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
@@ -106,3 +109,51 @@ CREATE INDEX IF NOT EXISTS idx_products_category_id ON products(category_id);
 CREATE INDEX IF NOT EXISTS idx_products_status ON products(status);
 CREATE INDEX IF NOT EXISTS idx_tags_slug ON tags(slug);
 CREATE INDEX IF NOT EXISTS idx_product_tags_tag_id ON product_tags(tag_id);
+
+-- -----------------------------------------------------
+-- 新闻表
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS news (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title VARCHAR(200) NOT NULL COMMENT '新闻标题',
+    slug VARCHAR(200) NOT NULL COMMENT '新闻别名',
+    content TEXT NOT NULL COMMENT '新闻内容',
+    excerpt TEXT COMMENT '摘要',
+    cover_image VARCHAR(500) NOT NULL COMMENT '封面图片',
+    category_id INTEGER NOT NULL COMMENT '分类ID',
+    author VARCHAR(50) NOT NULL COMMENT '作者',
+    view_count INTEGER NOT NULL DEFAULT 0 COMMENT '浏览数',
+    status TINYINT NOT NULL DEFAULT 0 COMMENT '状态: 0-草稿, 1-发布',
+    is_featured TINYINT NOT NULL DEFAULT 0 COMMENT '是否推荐: 0-普通, 1-推荐',
+    published_at DATETIME COMMENT '发布时间',
+    meta_title VARCHAR(200) COMMENT 'SEO标题',
+    meta_description TEXT COMMENT 'SEO描述',
+    created_at DATETIME NOT NULL DEFAULT (datetime('now')) COMMENT '创建时间',
+    updated_at DATETIME NOT NULL DEFAULT (datetime('now')) COMMENT '更新时间',
+    FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
+);
+
+-- -----------------------------------------------------
+-- 单页面表
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS pages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title VARCHAR(200) NOT NULL COMMENT '页面标题',
+    slug VARCHAR(200) NOT NULL COMMENT '页面别名(URL标识)',
+    content TEXT NOT NULL COMMENT '页面内容',
+    meta_title VARCHAR(200) COMMENT 'SEO标题',
+    meta_description TEXT COMMENT 'SEO描述',
+    status TINYINT NOT NULL DEFAULT 0 COMMENT '状态: 0-草稿, 1-发布',
+    created_at DATETIME NOT NULL DEFAULT (datetime('now')) COMMENT '创建时间',
+    updated_at DATETIME NOT NULL DEFAULT (datetime('now')) COMMENT '更新时间'
+);
+
+-- -----------------------------------------------------
+-- 索引
+-- -----------------------------------------------------
+CREATE INDEX IF NOT EXISTS idx_news_category_id ON news(category_id);
+CREATE INDEX IF NOT EXISTS idx_news_slug ON news(slug);
+CREATE INDEX IF NOT EXISTS idx_news_status ON news(status);
+CREATE INDEX IF NOT EXISTS idx_news_published_at ON news(published_at);
+CREATE INDEX IF NOT EXISTS idx_pages_slug ON pages(slug);
+CREATE INDEX IF NOT EXISTS idx_pages_status ON pages(status);

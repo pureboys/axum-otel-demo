@@ -1,16 +1,16 @@
 use sea_orm::entity::prelude::*;
 
 #[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel)]
-#[sea_orm(table_name = "categories")]
+#[sea_orm(table_name = "pages")]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
-    pub name: String,
+    pub title: String,
     pub slug: String,
-    pub description: String,
-    /// 分类类型: "product" 或 "news"
-    pub category_type: String,
-    pub parent_id: Option<i32>,
+    pub content: String,
+    pub meta_title: Option<String>,
+    pub meta_description: Option<String>,
+    pub status: i8,
     pub created_at: DateTime,
     pub updated_at: DateTime,
 }

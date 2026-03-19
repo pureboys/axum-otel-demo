@@ -10,6 +10,18 @@ impl CategoryRepository {
         category::Entity::find().all(db).await
     }
 
+    /// 按类型查询分类
+    pub async fn find_by_type(
+        db: &DatabaseConnection,
+        category_type: &str,
+    ) -> Result<Vec<category::Model>, DbErr> {
+        category::Entity::find()
+            .filter(category::Column::CategoryType.eq(category_type))
+            .order_by(category::Column::Id, Order::Asc)
+            .all(db)
+            .await
+    }
+
     /// 按 ID 查询分类
     pub async fn find_by_id(db: &DatabaseConnection, id: i32) -> Result<Option<category::Model>, DbErr> {
         category::Entity::find_by_id(id).one(db).await
@@ -49,12 +61,14 @@ impl CategoryRepository {
         name: String,
         slug: String,
         description: String,
+        category_type: String,
         parent_id: Option<i32>,
     ) -> Result<category::Model, DbErr> {
         let model = category::ActiveModel {
             name: Set(name),
             slug: Set(slug),
             description: Set(description),
+            category_type: Set(category_type),
             parent_id: Set(parent_id),
             created_at: Set(crate::utils::time::now()),
             updated_at: Set(crate::utils::time::now()),
@@ -70,6 +84,7 @@ impl CategoryRepository {
         name: Option<String>,
         slug: Option<String>,
         description: Option<String>,
+        category_type: Option<String>,
         parent_id: Option<Option<i32>>,
     ) -> Result<category::Model, DbErr> {
         if let Some(name) = name {
@@ -80,6 +95,9 @@ impl CategoryRepository {
         }
         if let Some(description) = description {
             model.description = Set(description);
+        }
+        if let Some(category_type) = category_type {
+            model.category_type = Set(category_type);
         }
         if let Some(parent_id) = parent_id {
             model.parent_id = Set(parent_id);

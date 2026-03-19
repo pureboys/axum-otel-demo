@@ -3,11 +3,10 @@
 mod dto;
 mod service;
 
-use axum::extract::State;
+use axum::extract::{Path, State};
 use axum::response::IntoResponse;
 use axum::routing::get;
 use axum::Router;
-
 use crate::app::AppState;
 use crate::dto::response::ApiResponse;
 use crate::error::AppError;
@@ -23,11 +22,21 @@ pub async fn list_categories(
     Ok(ApiResponse::success(categories))
 }
 
+/// GET /admin/categories/type/:category_type - 按类型获取分类
+#[tracing::instrument(skip_all)]
+pub async fn list_categories_by_type(
+    State(state): State<AppState>,
+    Path(category_type): Path<String>,
+) -> Result<impl IntoResponse, AppError> {
+    let categories = CategoryService::list_categories_by_type(&state, &category_type).await?;
+    Ok(ApiResponse::success(categories))
+}
+
 /// GET /admin/categories/:id - 获取分类详情
 #[tracing::instrument(skip(state))]
 pub async fn get_category(
     State(state): State<AppState>,
-    axum::extract::Path(id): axum::extract::Path<i32>,
+    Path(id): Path<i32>,
 ) -> Result<impl IntoResponse, AppError> {
     let category = CategoryService::get_category(&state, id).await?;
     Ok(ApiResponse::success(category))
@@ -47,7 +56,7 @@ pub async fn create_category(
 #[tracing::instrument(skip(state, payload))]
 pub async fn update_category(
     State(state): State<AppState>,
-    axum::extract::Path(id): axum::extract::Path<i32>,
+    Path(id): Path<i32>,
     axum::Json(payload): axum::Json<UpdateCategoryRequest>,
 ) -> Result<impl IntoResponse, AppError> {
     let category = CategoryService::update_category(&state, id, payload).await?;
@@ -58,7 +67,7 @@ pub async fn update_category(
 #[tracing::instrument(skip(state))]
 pub async fn delete_category(
     State(state): State<AppState>,
-    axum::extract::Path(id): axum::extract::Path<i32>,
+    Path(id): Path<i32>,
 ) -> Result<impl IntoResponse, AppError> {
     CategoryService::delete_category(&state, id).await?;
     Ok(ApiResponse::<()>::success_empty())
@@ -68,5 +77,6 @@ pub async fn delete_category(
 pub fn routes() -> Router<AppState> {
     Router::new()
         .route("/categories", get(list_categories).post(create_category))
+        .route("/categories/type/{category_type}", get(list_categories_by_type))
         .route("/categories/{id}", get(get_category).put(update_category).delete(delete_category))
 }

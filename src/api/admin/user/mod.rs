@@ -1,14 +1,21 @@
 //! 后台用户管理模块
 
-use axum::extract::State;
+mod dto;
+mod service;
+
+use axum::extract::{Path, State};
+use axum::http::StatusCode;
 use axum::response::IntoResponse;
+use axum::Json;
 use axum::routing::get;
 use axum::Router;
 
 use crate::app::AppState;
 use crate::dto::response::ApiResponse;
 use crate::error::AppError;
-use crate::api::front::user::{service::UserService, dto::{CreateUserRequest, UpdateUserRequest}};
+
+use dto::{CreateUserRequest, UpdateUserRequest};
+use service::UserService;
 
 /// GET /admin/users - 获取所有用户（后台管理）
 #[tracing::instrument(skip_all)]
@@ -23,7 +30,7 @@ pub async fn list_users(
 #[tracing::instrument(skip(state))]
 pub async fn get_user(
     State(state): State<AppState>,
-    axum::extract::Path(id): axum::extract::Path<i32>,
+    Path(id): Path<i32>,
 ) -> Result<impl IntoResponse, AppError> {
     let user = UserService::get_user(&state, id).await?;
     Ok(ApiResponse::success(user))
@@ -33,20 +40,23 @@ pub async fn get_user(
 #[tracing::instrument(skip_all)]
 pub async fn create_user(
     State(state): State<AppState>,
-    axum::Json(payload): axum::Json<CreateUserRequest>,
+    Json(payload): Json<CreateUserRequest>,
 ) -> Result<impl IntoResponse, AppError> {
+    tracing::debug!(username = %payload.username, "Creating new user");
     let user = UserService::create_user(&state, payload).await?;
-    Ok(ApiResponse::success(user))
+    tracing::info!(user_id = user.id, "User created successfully");
+    Ok(ApiResponse::success_with_status(user, StatusCode::CREATED))
 }
 
 /// PUT /admin/users/:id - 更新用户（后台管理）
 #[tracing::instrument(skip(state, payload))]
 pub async fn update_user(
     State(state): State<AppState>,
-    axum::extract::Path(id): axum::extract::Path<i32>,
-    axum::Json(payload): axum::Json<UpdateUserRequest>,
+    Path(id): Path<i32>,
+    Json(payload): Json<UpdateUserRequest>,
 ) -> Result<impl IntoResponse, AppError> {
     let user = UserService::update_user(&state, id, payload).await?;
+    tracing::info!(user_id = user.id, "User updated");
     Ok(ApiResponse::success(user))
 }
 
@@ -54,9 +64,10 @@ pub async fn update_user(
 #[tracing::instrument(skip(state))]
 pub async fn delete_user(
     State(state): State<AppState>,
-    axum::extract::Path(id): axum::extract::Path<i32>,
+    Path(id): Path<i32>,
 ) -> Result<impl IntoResponse, AppError> {
     UserService::delete_user(&state, id).await?;
+    tracing::info!(user_id = id, "User deleted");
     Ok(ApiResponse::<()>::success_empty())
 }
 

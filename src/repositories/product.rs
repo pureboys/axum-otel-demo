@@ -38,6 +38,39 @@ impl ProductRepository {
             .await
     }
 
+    /// 分页查询产品
+    pub async fn find_paginated(
+        db: &DatabaseConnection,
+        page: u32,
+        limit: u32,
+        category_id: Option<i32>,
+        status: Option<i8>,
+    ) -> Result<(Vec<product::Model>, u32), DbErr> {
+        let mut query = product::Entity::find();
+
+        if let Some(cid) = category_id {
+            query = query.filter(product::Column::CategoryId.eq(cid));
+        }
+        if let Some(s) = status {
+            query = query.filter(product::Column::Status.eq(s));
+        }
+
+        // Count total
+        let total = query.clone().count(db).await?;
+
+        // Apply pagination
+        let offset = ((page - 1) * limit) as u64;
+        let limit = limit as u64;
+        let items = query
+            .order_by(product::Column::Id, Order::Desc)
+            .offset(Some(offset))
+            .limit(Some(limit))
+            .all(db)
+            .await?;
+
+        Ok((items, total as u32))
+    }
+
     /// 创建产品
     pub async fn create(
         db: &DatabaseConnection,
@@ -48,6 +81,8 @@ impl ProductRepository {
         category_id: i32,
         image_url: String,
         status: i8,
+        meta_title: Option<String>,
+        meta_description: Option<String>,
     ) -> Result<product::Model, DbErr> {
         let model = product::ActiveModel {
             name: Set(name),
@@ -57,6 +92,8 @@ impl ProductRepository {
             category_id: Set(category_id),
             image_url: Set(image_url),
             status: Set(status),
+            meta_title: Set(meta_title),
+            meta_description: Set(meta_description),
             created_at: Set(crate::utils::time::now()),
             updated_at: Set(crate::utils::time::now()),
             ..Default::default()
@@ -75,6 +112,8 @@ impl ProductRepository {
         category_id: Option<i32>,
         image_url: Option<String>,
         status: Option<i8>,
+        meta_title: Option<Option<String>>,
+        meta_description: Option<Option<String>>,
     ) -> Result<product::Model, DbErr> {
         if let Some(name) = name {
             model.name = Set(name);
@@ -96,6 +135,12 @@ impl ProductRepository {
         }
         if let Some(status) = status {
             model.status = Set(status);
+        }
+        if let Some(meta_title) = meta_title {
+            model.meta_title = Set(meta_title);
+        }
+        if let Some(meta_description) = meta_description {
+            model.meta_description = Set(meta_description);
         }
         model.updated_at = Set(crate::utils::time::now());
         model.update(db).await
