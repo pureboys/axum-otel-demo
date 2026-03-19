@@ -43,3 +43,66 @@ CREATE INDEX IF NOT EXISTS idx_admins_username ON admins(username);
 CREATE INDEX IF NOT EXISTS idx_admins_status ON admins(status);
 CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+
+-- -----------------------------------------------------
+-- 分类表
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS categories (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name VARCHAR(100) NOT NULL COMMENT '分类名称',
+    slug VARCHAR(100) NOT NULL COMMENT '分类别名',
+    description TEXT COMMENT '分类描述',
+    parent_id INTEGER COMMENT '父分类ID',
+    created_at DATETIME NOT NULL DEFAULT (datetime('now')) COMMENT '创建时间',
+    updated_at DATETIME NOT NULL DEFAULT (datetime('now')) COMMENT '更新时间',
+    FOREIGN KEY (parent_id) REFERENCES categories(id) ON DELETE SET NULL
+);
+
+-- -----------------------------------------------------
+-- 商品表
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS products (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name VARCHAR(200) NOT NULL COMMENT '商品名称',
+    description TEXT COMMENT '商品描述',
+    price DECIMAL(10, 2) NOT NULL COMMENT '商品价格',
+    stock INTEGER NOT NULL DEFAULT 0 COMMENT '库存数量',
+    category_id INTEGER NOT NULL COMMENT '分类ID',
+    image_url VARCHAR(500) COMMENT '商品图片URL',
+    status TINYINT NOT NULL DEFAULT 1 COMMENT '状态: 0-下架, 1-上架',
+    created_at DATETIME NOT NULL DEFAULT (datetime('now')) COMMENT '创建时间',
+    updated_at DATETIME NOT NULL DEFAULT (datetime('now')) COMMENT '更新时间',
+    FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
+);
+
+-- -----------------------------------------------------
+-- 标签表
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS tags (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name VARCHAR(50) NOT NULL COMMENT '标签名称',
+    slug VARCHAR(50) NOT NULL COMMENT '标签别名',
+    created_at DATETIME NOT NULL DEFAULT (datetime('now')) COMMENT '创建时间',
+    updated_at DATETIME NOT NULL DEFAULT (datetime('now')) COMMENT '更新时间'
+);
+
+-- -----------------------------------------------------
+-- 商品标签关联表
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS product_tags (
+    product_id INTEGER NOT NULL COMMENT '商品ID',
+    tag_id INTEGER NOT NULL COMMENT '标签ID',
+    PRIMARY KEY (product_id, tag_id),
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+    FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE
+);
+
+-- -----------------------------------------------------
+-- 索引
+-- -----------------------------------------------------
+CREATE INDEX IF NOT EXISTS idx_categories_parent_id ON categories(parent_id);
+CREATE INDEX IF NOT EXISTS idx_categories_slug ON categories(slug);
+CREATE INDEX IF NOT EXISTS idx_products_category_id ON products(category_id);
+CREATE INDEX IF NOT EXISTS idx_products_status ON products(status);
+CREATE INDEX IF NOT EXISTS idx_tags_slug ON tags(slug);
+CREATE INDEX IF NOT EXISTS idx_product_tags_tag_id ON product_tags(tag_id);
