@@ -3,10 +3,11 @@
 mod dto;
 mod service;
 
-use axum::extract::State;
+use axum::extract::{Query, State};
 use axum::response::IntoResponse;
 use axum::routing::get;
 use axum::Router;
+use serde::Deserialize;
 
 use crate::app::AppState;
 use crate::dto::response::ApiResponse;
@@ -14,12 +15,23 @@ use crate::error::AppError;
 use service::PageService;
 use dto::{CreatePageRequest, UpdatePageRequest};
 
-/// GET /admin/pages - 获取所有页面
+/// 分页查询参数
+#[derive(Debug, Deserialize)]
+pub struct PaginationQuery {
+    pub page: Option<u32>,
+    pub limit: Option<u32>,
+    pub status: Option<i8>,
+}
+
+/// GET /admin/pages - 获取所有页面（支持分页）
 #[tracing::instrument(skip_all)]
 pub async fn list_pages(
     State(state): State<AppState>,
+    Query(query): Query<PaginationQuery>,
 ) -> Result<impl IntoResponse, AppError> {
-    let pages = PageService::list_pages(&state).await?;
+    let page = query.page.unwrap_or(1).max(1);
+    let limit = query.limit.unwrap_or(10).min(100);
+    let pages = PageService::list_pages_paginated(&state, page, limit, query.status).await?;
     Ok(ApiResponse::success(pages))
 }
 

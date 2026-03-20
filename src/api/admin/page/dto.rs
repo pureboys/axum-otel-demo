@@ -51,3 +51,12 @@ impl From<crate::models::page::Model> for PageResponse {
         }
     }
 }
+
+/// 分页响应
+#[derive(Debug, Serialize)]
+pub struct PaginatedPageResponse {
+    pub items: Vec<PageResponse>,
+    pub total: u32,
+    pub page: u32,
+    pub limit: u32,
+}

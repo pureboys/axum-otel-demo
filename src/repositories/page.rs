@@ -10,6 +10,35 @@ impl PageRepository {
         page::Entity::find().all(db).await
     }
 
+    /// 分页查询页面
+    pub async fn find_paginated(
+        db: &DatabaseConnection,
+        page: u32,
+        limit: u32,
+        status: Option<i8>,
+    ) -> Result<(Vec<page::Model>, u32), DbErr> {
+        let mut query = page::Entity::find();
+
+        if let Some(s) = status {
+            query = query.filter(page::Column::Status.eq(s));
+        }
+
+        // Count total
+        let total = query.clone().count(db).await?;
+
+        // Apply pagination
+        let offset = ((page - 1) * limit) as u64;
+        let limit = limit as u64;
+        let items = query
+            .order_by(page::Column::CreatedAt, Order::Desc)
+            .offset(Some(offset))
+            .limit(Some(limit))
+            .all(db)
+            .await?;
+
+        Ok((items, total as u32))
+    }
+
     /// 按 ID 查询页面
     pub async fn find_by_id(db: &DatabaseConnection, id: i32) -> Result<Option<page::Model>, DbErr> {
         page::Entity::find_by_id(id).one(db).await

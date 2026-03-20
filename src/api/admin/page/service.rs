@@ -1,17 +1,35 @@
 use crate::app::AppState;
 use crate::error::AppError;
 use crate::repositories::page::PageRepository;
-use super::dto::{CreatePageRequest, UpdatePageRequest, PageResponse};
+use super::dto::{CreatePageRequest, UpdatePageRequest, PageResponse, PaginatedPageResponse};
 
 pub struct PageService;
 
 impl PageService {
-    /// 获取所有页面
+    /// 获取所有页面（不分页）
     pub async fn list_pages(state: &AppState) -> Result<Vec<PageResponse>, AppError> {
         let pages = PageRepository::find_all(&state.db)
             .await
             .map_err(AppError::from)?;
         Ok(pages.into_iter().map(PageResponse::from).collect())
+    }
+
+    /// 分页获取页面
+    pub async fn list_pages_paginated(
+        state: &AppState,
+        page: u32,
+        limit: u32,
+        status: Option<i8>,
+    ) -> Result<PaginatedPageResponse, AppError> {
+        let (pages, total) = PageRepository::find_paginated(&state.db, page, limit, status)
+            .await
+            .map_err(AppError::from)?;
+        Ok(PaginatedPageResponse {
+            items: pages.into_iter().map(PageResponse::from).collect(),
+            total,
+            page,
+            limit,
+        })
     }
 
     /// 获取页面详情
