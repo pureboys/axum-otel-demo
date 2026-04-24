@@ -43,16 +43,7 @@ pub async fn list_products(
     Ok(ApiResponse::success(products))
 }
 
-/// GET /admin/products/all - 获取所有产品（不分页）
-#[tracing::instrument(skip_all)]
-pub async fn list_all_products(
-    State(state): State<AppState>,
-) -> Result<impl IntoResponse, AppError> {
-    let products = ProductService::list_products(&state).await?;
-    Ok(ApiResponse::success(products))
-}
-
-/// GET /admin/products/:id - 获取产品详情
+/// GET /products/:id - 获取产品详情
 #[tracing::instrument(skip(state))]
 pub async fn get_product(
     State(state): State<AppState>,
@@ -138,7 +129,6 @@ pub async fn remove_product_tag(
 pub fn routes() -> Router<AppState> {
     Router::new()
         .route("/products", get(list_products).post(create_product))
-        .route("/products/all", get(list_all_products))
         .route("/products/{id}", get(get_product).put(update_product).delete(delete_product))
         .route("/products/{id}/tags", get(get_product_with_tags).put(set_product_tags))
         .route("/products/{product_id}/tags/{tag_id}", post(add_product_tag).delete(remove_product_tag))

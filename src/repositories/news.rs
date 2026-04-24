@@ -16,39 +16,6 @@ impl NewsRepository {
         news::Entity::find_by_id(id).one(db).await
     }
 
-    /// 按slug查询新闻
-    pub async fn find_by_slug(
-        db: &DatabaseConnection,
-        slug: &str,
-    ) -> Result<Option<news::Model>, DbErr> {
-        news::Entity::find()
-            .filter(news::Column::Slug.eq(slug))
-            .one(db)
-            .await
-    }
-
-    /// 按分类ID查询新闻
-    pub async fn find_by_category(
-        db: &DatabaseConnection,
-        category_id: i32,
-    ) -> Result<Vec<news::Model>, DbErr> {
-        news::Entity::find()
-            .filter(news::Column::CategoryId.eq(category_id))
-            .all(db)
-            .await
-    }
-
-    /// 按状态查询新闻
-    pub async fn find_by_status(
-        db: &DatabaseConnection,
-        status: i8,
-    ) -> Result<Vec<news::Model>, DbErr> {
-        news::Entity::find()
-            .filter(news::Column::Status.eq(status))
-            .all(db)
-            .await
-    }
-
     /// 分页查询新闻
     pub async fn find_paginated(
         db: &DatabaseConnection,
@@ -174,21 +141,6 @@ impl NewsRepository {
         }
         model.updated_at = Set(crate::utils::time::now());
         model.update(db).await
-    }
-
-    /// 增加浏览数
-    pub async fn increment_view_count(
-        db: &DatabaseConnection,
-        id: i32,
-    ) -> Result<(), DbErr> {
-        let model = news::Entity::find_by_id(id).one(db).await?;
-        if let Some(model) = model {
-            let view_count = model.view_count;
-            let mut active_model: news::ActiveModel = model.into();
-            active_model.view_count = Set(view_count + 1);
-            active_model.update(db).await?;
-        }
-        Ok(())
     }
 
     /// 删除新闻

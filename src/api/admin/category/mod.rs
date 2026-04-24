@@ -22,16 +22,6 @@ pub async fn list_categories(
     Ok(ApiResponse::success(categories))
 }
 
-/// GET /admin/categories/type/:category_type - 按类型获取分类
-#[tracing::instrument(skip_all)]
-pub async fn list_categories_by_type(
-    State(state): State<AppState>,
-    Path(category_type): Path<String>,
-) -> Result<impl IntoResponse, AppError> {
-    let categories = CategoryService::list_categories_by_type(&state, &category_type).await?;
-    Ok(ApiResponse::success(categories))
-}
-
 /// GET /admin/categories/:id - 获取分类详情
 #[tracing::instrument(skip(state))]
 pub async fn get_category(
@@ -77,6 +67,5 @@ pub async fn delete_category(
 pub fn routes() -> Router<AppState> {
     Router::new()
         .route("/categories", get(list_categories).post(create_category))
-        .route("/categories/type/{category_type}", get(list_categories_by_type))
         .route("/categories/{id}", get(get_category).put(update_category).delete(delete_category))
 }

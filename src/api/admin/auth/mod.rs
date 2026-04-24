@@ -26,7 +26,7 @@ pub async fn login(
 ) -> Result<impl IntoResponse, AppError> {
     tracing::debug!("Admin login attempt for username: {}", req.username);
 
-    let response = service::AuthService::login(&state, req.username, req.password).await?;
+    let response = service::AuthService::login(&state, req.username, req.password, req.altcha).await?;
 
     tracing::info!(admin_id = response.admin.id, "Admin logged in successfully");
 

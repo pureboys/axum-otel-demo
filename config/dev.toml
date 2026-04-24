@@ -12,3 +12,8 @@ pyroscope_endpoint = "http://localhost:4040"
 [jwt]
 secret = "your-secret-key-change-in-production"
 expire_seconds = 86400
+
+# ALTCHA PoW：与前端 <altcha-widget> 共用，生产环境务必更换
+[altcha]
+hmac_secret = "dev-altcha-hmac-secret-change-in-production"
+hmac_key_secret = "dev-altcha-key-secret-change-in-production"

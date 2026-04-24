@@ -43,16 +43,7 @@ pub async fn list_news(
     Ok(ApiResponse::success(news_list))
 }
 
-/// GET /admin/news/all - 获取所有新闻（不分页）
-#[tracing::instrument(skip_all)]
-pub async fn list_all_news(
-    State(state): State<AppState>,
-) -> Result<impl IntoResponse, AppError> {
-    let news_list = NewsService::list_news(&state).await?;
-    Ok(ApiResponse::success(news_list))
-}
-
-/// GET /admin/news/:id - 获取新闻详情
+/// GET /news/:id - 获取新闻详情
 #[tracing::instrument(skip(state))]
 pub async fn get_news(
     State(state): State<AppState>,
@@ -97,6 +88,5 @@ pub async fn delete_news(
 pub fn routes() -> Router<AppState> {
     Router::new()
         .route("/news", get(list_news).post(create_news))
-        .route("/news/all", get(list_all_news))
         .route("/news/{id}", get(get_news).put(update_news).delete(delete_news))
 }

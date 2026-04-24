@@ -27,33 +27,7 @@ impl CategoryRepository {
         category::Entity::find_by_id(id).one(db).await
     }
 
-    /// 按父ID查询子分类
-    pub async fn find_by_parent(
-        db: &DatabaseConnection,
-        parent_id: Option<i32>,
-    ) -> Result<Vec<category::Model>, DbErr> {
-        match parent_id {
-            Some(id) => category::Entity::find()
-                .filter(category::Column::ParentId.eq(id))
-                .all(db)
-                .await,
-            None => category::Entity::find()
-                .filter(category::Column::ParentId.is_null())
-                .all(db)
-                .await,
-        }
-    }
 
-    /// 按slug查询分类
-    pub async fn find_by_slug(
-        db: &DatabaseConnection,
-        slug: &str,
-    ) -> Result<Option<category::Model>, DbErr> {
-        category::Entity::find()
-            .filter(category::Column::Slug.eq(slug))
-            .one(db)
-            .await
-    }
 
     /// 创建分类
     pub async fn create(

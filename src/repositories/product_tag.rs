@@ -16,16 +16,6 @@ impl ProductTagRepository {
             .await
     }
 
-    /// 获取标签的所有产品ID
-    pub async fn find_by_tag(
-        db: &DatabaseConnection,
-        tag_id: i32,
-    ) -> Result<Vec<product_tag::Model>, DbErr> {
-        product_tag::Entity::find()
-            .filter(product_tag::Column::TagId.eq(tag_id))
-            .all(db)
-            .await
-    }
 
     /// 为产品添加标签
     pub async fn add_tag(

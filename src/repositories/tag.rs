@@ -26,17 +26,6 @@ impl TagRepository {
             .await
     }
 
-    /// 按slug查询标签
-    pub async fn find_by_slug(
-        db: &DatabaseConnection,
-        slug: &str,
-    ) -> Result<Option<tag::Model>, DbErr> {
-        tag::Entity::find()
-            .filter(tag::Column::Slug.eq(slug))
-            .one(db)
-            .await
-    }
-
     /// 创建标签
     pub async fn create(
         db: &DatabaseConnection,

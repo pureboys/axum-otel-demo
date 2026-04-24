@@ -3,6 +3,8 @@ use serde::{Deserialize, Serialize};
 /// 登录请求
 #[derive(Debug, Deserialize)]
 pub struct LoginRequest {
+    /// ALTCHA 人机验证：Base64 编码的 `{"challenge":...,"solution":...}` 载荷
+    pub altcha: String,
     pub username: String,
     pub password: String,
 }

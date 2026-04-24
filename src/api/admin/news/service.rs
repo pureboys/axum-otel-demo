@@ -8,14 +8,6 @@ use super::dto::{CreateNewsRequest, UpdateNewsRequest, NewsResponse, PaginatedNe
 pub struct NewsService;
 
 impl NewsService {
-    /// 获取所有新闻
-    pub async fn list_news(state: &AppState) -> Result<Vec<NewsResponse>, AppError> {
-        let news_list = NewsRepository::find_all(&state.db)
-            .await
-            .map_err(AppError::from)?;
-        Ok(news_list.into_iter().map(NewsResponse::from).collect())
-    }
-
     /// 分页获取新闻
     pub async fn list_news_paginated(
         state: &AppState,

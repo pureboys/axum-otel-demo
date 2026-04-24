@@ -5,11 +5,6 @@ use crate::models::page;
 pub struct PageRepository;
 
 impl PageRepository {
-    /// 查询全部页面
-    pub async fn find_all(db: &DatabaseConnection) -> Result<Vec<page::Model>, DbErr> {
-        page::Entity::find().all(db).await
-    }
-
     /// 分页查询页面
     pub async fn find_paginated(
         db: &DatabaseConnection,
@@ -42,28 +37,6 @@ impl PageRepository {
     /// 按 ID 查询页面
     pub async fn find_by_id(db: &DatabaseConnection, id: i32) -> Result<Option<page::Model>, DbErr> {
         page::Entity::find_by_id(id).one(db).await
-    }
-
-    /// 按slug查询页面
-    pub async fn find_by_slug(
-        db: &DatabaseConnection,
-        slug: &str,
-    ) -> Result<Option<page::Model>, DbErr> {
-        page::Entity::find()
-            .filter(page::Column::Slug.eq(slug))
-            .one(db)
-            .await
-    }
-
-    /// 按状态查询页面
-    pub async fn find_by_status(
-        db: &DatabaseConnection,
-        status: i8,
-    ) -> Result<Vec<page::Model>, DbErr> {
-        page::Entity::find()
-            .filter(page::Column::Status.eq(status))
-            .all(db)
-            .await
     }
 
     /// 创建页面

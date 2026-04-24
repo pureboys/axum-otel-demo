@@ -2,6 +2,7 @@ use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation}
 use serde::{Deserialize, Serialize};
 use chrono::{Duration, Utc};
 
+use crate::api::common::captcha;
 use crate::app::AppState;
 use crate::config::RAW_CONFIG;
 use crate::error::AppError;
@@ -36,7 +37,10 @@ impl AuthService {
         state: &AppState,
         username: String,
         password: String,
+        altcha: String,
     ) -> Result<LoginResponse, AppError> {
+        captcha::verify_client_payload(&altcha)?;
+
         // 查询管理员
         let admin = AdminRepository::find_by_username(&state.db, &username)
             .await?

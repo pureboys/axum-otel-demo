@@ -11,14 +11,6 @@ use super::dto::{CreateProductRequest, UpdateProductRequest, ProductResponse, Pr
 pub struct ProductService;
 
 impl ProductService {
-    /// 获取所有产品
-    pub async fn list_products(state: &AppState) -> Result<Vec<ProductResponse>, AppError> {
-        let products = ProductRepository::find_all(&state.db)
-            .await
-            .map_err(AppError::from)?;
-        Ok(products.into_iter().map(ProductResponse::from).collect())
-    }
-
     /// 分页获取产品
     pub async fn list_products_paginated(
         state: &AppState,

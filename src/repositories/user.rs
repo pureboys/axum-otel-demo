@@ -15,16 +15,6 @@ impl UserRepository {
         user::Entity::find_by_id(id).one(db).await
     }
 
-    /// 按 username 查询用户
-    pub async fn find_by_username(
-        db: &DatabaseConnection,
-        username: &str,
-    ) -> Result<Option<user::Model>, DbErr> {
-        user::Entity::find()
-            .filter(user::Column::Username.eq(username))
-            .one(db)
-            .await
-    }
 
     /// 创建用户
     pub async fn create(

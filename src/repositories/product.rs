@@ -16,27 +16,7 @@ impl ProductRepository {
         product::Entity::find_by_id(id).one(db).await
     }
 
-    /// 按分类ID查询产品
-    pub async fn find_by_category(
-        db: &DatabaseConnection,
-        category_id: i32,
-    ) -> Result<Vec<product::Model>, DbErr> {
-        product::Entity::find()
-            .filter(product::Column::CategoryId.eq(category_id))
-            .all(db)
-            .await
-    }
 
-    /// 按状态查询产品
-    pub async fn find_by_status(
-        db: &DatabaseConnection,
-        status: i8,
-    ) -> Result<Vec<product::Model>, DbErr> {
-        product::Entity::find()
-            .filter(product::Column::Status.eq(status))
-            .all(db)
-            .await
-    }
 
     /// 分页查询产品
     pub async fn find_paginated(

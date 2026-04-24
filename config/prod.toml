@@ -12,3 +12,7 @@ pyroscope_endpoint = "http://localhost:4040"
 [jwt]
 secret = "change-this-to-a-secure-secret-in-production"
 expire_seconds = 86400
+
+[altcha]
+hmac_secret = "change-this-altcha-hmac-secret"
+hmac_key_secret = "change-this-altcha-key-secret"
