@@ -9,16 +9,16 @@ import {
   UnorderedListOutlined,
   VideoCameraOutlined,
 } from '@ant-design/icons'
-import { App, Button, Input, Space, Tooltip, theme } from 'antd'
+import { App, Button, Input, Space, Tooltip, theme, Upload, type UploadProps } from 'antd'
 import Image from '@tiptap/extension-image'
 import Link from '@tiptap/extension-link'
 import Placeholder from '@tiptap/extension-placeholder'
 import Underline from '@tiptap/extension-underline'
 import { EditorContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Video } from './editor/videoExtension'
-import { mockServer } from '../mock/server'
+import { uploadRichMediaToUrl } from '../utils/uploadRichMedia'
 
 export type HtmlRichEditorProps = {
   value?: string
@@ -26,12 +26,6 @@ export type HtmlRichEditorProps = {
   placeholder?: string
   disabled?: boolean
   minHeight?: number
-}
-
-async function uploadToUrl(file: File): Promise<string> {
-  const res = await mockServer.uploadRichMedia(file)
-  if (res.code !== 0) throw new Error(res.msg)
-  return res.data.url
 }
 
 export function HtmlRichEditor({
@@ -44,8 +38,6 @@ export function HtmlRichEditor({
   const { token } = theme.useToken()
   const { message } = App.useApp()
   const [htmlMode, setHtmlMode] = useState(false)
-  const imageRef = useRef<HTMLInputElement>(null)
-  const videoRef = useRef<HTMLInputElement>(null)
 
   const editor = useEditor({
     extensions: [
@@ -82,29 +74,28 @@ export function HtmlRichEditor({
     editor.commands.setContent(value || '', { emitUpdate: false })
   }, [editor, value, htmlMode])
 
-  const runImagePick = () => imageRef.current?.click()
-  const runVideoPick = () => videoRef.current?.click()
-
-  const onImageFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    e.target.value = ''
-    if (!file || !editor) return
+  const imageUpload: UploadProps['customRequest'] = async (opt) => {
+    const { file, onError, onSuccess } = opt
+    if (!editor) return
     try {
-      const url = await uploadToUrl(file)
+      const url = await uploadRichMediaToUrl(file as File)
+      onSuccess?.(url)
       editor.chain().focus().setImage({ src: url }).run()
     } catch (err) {
+      onError?.(err instanceof Error ? err : new Error(String(err)))
       message.error(err instanceof Error ? err.message : '图片上传失败')
     }
   }
 
-  const onVideoFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    e.target.value = ''
-    if (!file || !editor) return
+  const videoUpload: UploadProps['customRequest'] = async (opt) => {
+    const { file, onError, onSuccess } = opt
+    if (!editor) return
     try {
-      const url = await uploadToUrl(file)
+      const url = await uploadRichMediaToUrl(file as File)
+      onSuccess?.(url)
       editor.chain().focus().insertContent({ type: 'video', attrs: { src: url } }).run()
     } catch (err) {
+      onError?.(err instanceof Error ? err : new Error(String(err)))
       message.error(err instanceof Error ? err.message : '视频上传失败')
     }
   }
@@ -137,21 +128,6 @@ export function HtmlRichEditor({
 
   return (
     <div className="html-rich-editor">
-      <input
-        ref={imageRef}
-        type="file"
-        accept="image/*"
-        style={{ display: 'none' }}
-        onChange={(e) => void onImageFile(e)}
-      />
-      <input
-        ref={videoRef}
-        type="file"
-        accept="video/*"
-        style={{ display: 'none' }}
-        onChange={(e) => void onVideoFile(e)}
-      />
-
       <Space wrap style={{ marginBottom: 8 }}>
         <Tooltip title="粗体">
           <Button
@@ -208,20 +184,26 @@ export function HtmlRichEditor({
           />
         </Tooltip>
         <Tooltip title="上传图片">
-          <Button
-            size="small"
+          <Upload
+            accept="image/*"
+            showUploadList={false}
+            customRequest={imageUpload}
             disabled={disabled || htmlMode || !editor}
-            icon={<PictureOutlined />}
-            onClick={runImagePick}
-          />
+            multiple={false}
+          >
+            <Button size="small" icon={<PictureOutlined />} />
+          </Upload>
         </Tooltip>
         <Tooltip title="上传视频">
-          <Button
-            size="small"
+          <Upload
+            accept="video/*"
+            showUploadList={false}
+            customRequest={videoUpload}
             disabled={disabled || htmlMode || !editor}
-            icon={<VideoCameraOutlined />}
-            onClick={runVideoPick}
-          />
+            multiple={false}
+          >
+            <Button size="small" icon={<VideoCameraOutlined />} />
+          </Upload>
         </Tooltip>
         <Tooltip title={htmlMode ? '返回可视化编辑' : '编辑 HTML 源码'}>
           <Button

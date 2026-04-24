@@ -8,7 +8,6 @@ import {
   Descriptions,
   Divider,
   Form,
-  Image,
   Input,
   InputNumber,
   Row,
@@ -21,6 +20,7 @@ import {
 } from 'antd'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { ImageUrlField } from '../components/ImageUrlField'
 import { HtmlRichEditor } from '../components/HtmlRichEditor'
 import { labelForProductNewsStatus, productNewsStatusOptions } from '../constants/status'
 import { mockServer } from '../mock/server'
@@ -114,7 +114,6 @@ export function ProductDetailPage() {
     void loadProduct()
   }, [isCreate, loadProduct, form])
 
-  const imageUrl = Form.useWatch('image_url', form)
   const nameVal = Form.useWatch('name', form)
   const categoryIdVal = Form.useWatch('category_id', form)
 
@@ -275,24 +274,13 @@ export function ProductDetailPage() {
           </Col>
 
           <Col xs={24} lg={9} xl={8}>
-            <Card title="主图预览" variant="borderless" style={{ marginBottom: 24 }}>
-              <div
-                style={{
-                  background: token.colorFillAlter,
-                  borderRadius: token.borderRadiusLG,
-                  padding: 16,
-                  textAlign: 'center',
-                  marginBottom: 16,
-                }}
+            <Card title="主图" variant="borderless" style={{ marginBottom: 24 }}>
+              <Form.Item
+                name="image_url"
+                extra="可上传或粘贴地址（演示为本地 Data URL）"
+                rules={[{ required: true, message: '请上传主图或填写图片地址' }]}
               >
-                {imageUrl ? (
-                  <Image src={imageUrl} alt="" style={{ maxWidth: '100%', maxHeight: 280, objectFit: 'contain' }} />
-                ) : (
-                  <Typography.Text type="secondary">填写图片 URL 后在此预览</Typography.Text>
-                )}
-              </div>
-              <Form.Item name="image_url" label="图片 URL" rules={[{ required: true, message: '请填写图片地址' }]}>
-                <Input placeholder="https://..." />
+                <ImageUrlField minHeight={220} />
               </Form.Item>
             </Card>
 

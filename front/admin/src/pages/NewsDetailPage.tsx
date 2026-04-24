@@ -8,7 +8,6 @@ import {
   Descriptions,
   Divider,
   Form,
-  Image,
   Input,
   InputNumber,
   Row,
@@ -20,6 +19,7 @@ import {
 } from 'antd'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { ImageUrlField } from '../components/ImageUrlField'
 import { HtmlRichEditor } from '../components/HtmlRichEditor'
 import { labelForProductNewsStatus, productNewsStatusOptions } from '../constants/status'
 import { mockServer } from '../mock/server'
@@ -96,7 +96,6 @@ export function NewsDetailPage() {
     void loadNews()
   }, [isCreate, loadNews, form])
 
-  const coverUrl = Form.useWatch('cover_image', form)
   const titleVal = Form.useWatch('title', form)
   const categoryIdVal = Form.useWatch('category_id', form)
 
@@ -261,23 +260,12 @@ export function NewsDetailPage() {
 
           <Col xs={24} lg={9} xl={8}>
             <Card title="封面图" variant="borderless" style={{ marginBottom: 24 }}>
-              <div
-                style={{
-                  background: token.colorFillAlter,
-                  borderRadius: token.borderRadiusLG,
-                  padding: 16,
-                  textAlign: 'center',
-                  marginBottom: 16,
-                }}
+              <Form.Item
+                name="cover_image"
+                extra="可上传或粘贴地址（演示为本地 Data URL）"
+                rules={[{ required: true, message: '请上传封面或填写地址' }]}
               >
-                {coverUrl ? (
-                  <Image src={coverUrl} alt="" style={{ width: '100%', maxHeight: 220, objectFit: 'cover' }} />
-                ) : (
-                  <Typography.Text type="secondary">填写封面 URL 后预览</Typography.Text>
-                )}
-              </div>
-              <Form.Item name="cover_image" label="封面图片 URL" rules={[{ required: true, message: '请填写封面' }]}>
-                <Input placeholder="https://..." />
+                <ImageUrlField minHeight={200} />
               </Form.Item>
             </Card>
 
