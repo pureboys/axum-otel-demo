@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import { AuthProvider } from './context/AuthProvider'
 import { AdminLayout } from './layouts/AdminLayout'
 import { CategoriesPage } from './pages/CategoriesPage'
+import { InquiriesPage } from './pages/InquiriesPage'
 import { LoginPage } from './pages/Login'
 import { NewsDetailPage } from './pages/NewsDetailPage'
 import { NewsAdminPage } from './pages/NewsPage'
@@ -38,6 +39,7 @@ export default function App() {
           <Route path="/site-pages/new" element={<SitePageDetailPage />} />
           <Route path="/site-pages/:id" element={<SitePageDetailPage />} />
           <Route path="/site-pages" element={<SitePagesPage />} />
+          <Route path="/inquiries" element={<InquiriesPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/admins" replace />} />
       </Routes>

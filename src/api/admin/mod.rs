@@ -7,6 +7,7 @@ pub mod category;
 pub mod tag;
 pub mod news;
 pub mod page;
+pub mod inquiry;
 
 use axum::middleware;
 use axum::Router;
@@ -18,6 +19,7 @@ use crate::middleware::auth as auth_middleware;
 pub fn public_routes() -> Router<AppState> {
     Router::new()
         .merge(auth::auth_public_routes())
+        .merge(inquiry::public_routes())
 }
 
 /// 构建后台受保护路由（需认证）
@@ -30,5 +32,6 @@ pub fn protected_routes(state: AppState) -> Router<AppState> {
         .merge(tag::routes())
         .merge(news::routes())
         .merge(page::routes())
+        .merge(inquiry::protected_routes())
         .layer(middleware::from_fn_with_state(state, auth_middleware::auth_middleware))
 }

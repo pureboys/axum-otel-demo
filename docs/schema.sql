@@ -157,3 +157,25 @@ CREATE INDEX IF NOT EXISTS idx_news_status ON news(status);
 CREATE INDEX IF NOT EXISTS idx_news_published_at ON news(published_at);
 CREATE INDEX IF NOT EXISTS idx_pages_slug ON pages(slug);
 CREATE INDEX IF NOT EXISTS idx_pages_status ON pages(status);
+
+-- -----------------------------------------------------
+-- 询盘表
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS inquiries (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name VARCHAR(100) NOT NULL COMMENT '联系人姓名',
+    email VARCHAR(200) COMMENT '邮箱',
+    phone VARCHAR(50) COMMENT '联系电话',
+    message TEXT NOT NULL COMMENT '留言内容',
+    product_id INTEGER COMMENT '关联商品ID',
+    product_name VARCHAR(200) COMMENT '商品名称快照',
+    created_at DATETIME NOT NULL DEFAULT (datetime('now')) COMMENT '创建时间',
+    updated_at DATETIME NOT NULL DEFAULT (datetime('now')) COMMENT '更新时间',
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE SET NULL
+);
+
+-- -----------------------------------------------------
+-- 索引
+-- -----------------------------------------------------
+CREATE INDEX IF NOT EXISTS idx_inquiries_product_id ON inquiries(product_id);
+CREATE INDEX IF NOT EXISTS idx_inquiries_created_at ON inquiries(created_at);

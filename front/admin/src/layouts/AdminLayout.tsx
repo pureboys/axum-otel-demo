@@ -3,6 +3,7 @@ import {
   FileTextOutlined,
   FolderOutlined,
   LogoutOutlined,
+  MailOutlined,
   ShoppingOutlined,
   TagsOutlined,
   UserOutlined,
@@ -21,6 +22,7 @@ const menuItems: MenuProps['items'] = [
   { key: '/products', icon: <ShoppingOutlined />, label: '产品管理' },
   { key: '/news', icon: <FileTextOutlined />, label: '新闻管理' },
   { key: '/site-pages', icon: <AppstoreOutlined />, label: '页面管理' },
+  { key: '/inquiries', icon: <MailOutlined />, label: '询盘管理' },
 ]
 
 export function AdminLayout() {

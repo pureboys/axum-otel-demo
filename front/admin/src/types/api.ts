@@ -114,3 +114,24 @@ export interface CmsPage {
   created_at: string
   updated_at: string
 }
+
+export interface Inquiry {
+  id: number
+  name: string
+  email: string | null
+  phone: string | null
+  message: string
+  product_id: number | null
+  product_name: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface CreateInquiryRequest {
+  name: string
+  email?: string
+  phone?: string
+  message: string
+  product_id?: number
+  product_name?: string
+}

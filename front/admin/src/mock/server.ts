@@ -5,6 +5,8 @@ import type {
   Category,
   CategoryType,
   CmsPage,
+  CreateInquiryRequest,
+  Inquiry,
   LoginData,
   NewsItem,
   Paginated,
@@ -40,6 +42,7 @@ let nextCatId = 3
 let nextProductId = 2
 let nextNewsId = 2
 let nextPageId = 2
+let nextInquiryId = 3
 
 const adminUsers: AdminUser[] = [
   { id: 1, username: 'admin', nickname: '系统管理员', role: 'super_admin', status: 1, last_login_at: ts, created_at: ts, updated_at: ts },
@@ -111,6 +114,31 @@ const news: NewsItem[] = [
     published_at: ts,
     meta_title: '公司新闻 - 官网',
     meta_description: '公司最新新闻动态',
+    created_at: ts,
+    updated_at: ts,
+  },
+]
+
+const inquiries: Inquiry[] = [
+  {
+    id: 1,
+    name: '张三',
+    email: 'zhangsan@example.com',
+    phone: '13800138000',
+    message: '请问这款产品是否支持批量采购？',
+    product_id: 1,
+    product_name: 'iPhone 15',
+    created_at: ts,
+    updated_at: ts,
+  },
+  {
+    id: 2,
+    name: '李四',
+    email: null,
+    phone: '13900139000',
+    message: '能否提供产品详细规格参数？',
+    product_id: null,
+    product_name: null,
     created_at: ts,
     updated_at: ts,
   },
@@ -553,6 +581,40 @@ export const mockServer = {
     const i = pages.findIndex((x) => x.id === id)
     if (i === -1) return fail(404, '资源不存在')
     pages.splice(i, 1)
+    return ok(null)
+  },
+
+  async listInquiries(q: { page?: number; limit?: number }): Promise<ApiResponse<Paginated<Inquiry>>> {
+    await sleep(200)
+    const sorted = [...inquiries].sort((a, b) => b.id - a.id)
+    return ok(paginate(sorted, q.page ?? 1, q.limit ?? 20))
+  },
+
+  async createInquiry(body: CreateInquiryRequest): Promise<ApiResponse<Inquiry>> {
+    await sleep(200)
+    if (!body.name?.trim()) return fail(400, '姓名不能为空', null as unknown as Inquiry)
+    if (!body.message?.trim()) return fail(400, '留言内容不能为空', null as unknown as Inquiry)
+    const t0 = nowStr()
+    const item: Inquiry = {
+      id: nextInquiryId++,
+      name: body.name.trim(),
+      email: body.email ?? null,
+      phone: body.phone ?? null,
+      message: body.message.trim(),
+      product_id: body.product_id ?? null,
+      product_name: body.product_name ?? null,
+      created_at: t0,
+      updated_at: t0,
+    }
+    inquiries.push(item)
+    return ok({ ...item })
+  },
+
+  async deleteInquiry(id: number): Promise<ApiResponse<null>> {
+    await sleep(150)
+    const i = inquiries.findIndex((x) => x.id === id)
+    if (i === -1) return fail(404, '资源不存在')
+    inquiries.splice(i, 1)
     return ok(null)
   },
 
