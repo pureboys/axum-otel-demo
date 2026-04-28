@@ -112,7 +112,7 @@ export function ProductsPage() {
             render: (p: number) => `¥${p.toFixed(2)}`,
           },
           { title: '库存', dataIndex: 'stock', width: 88 },
-          { title: '分类 ID', dataIndex: 'category_id', width: 96 },
+          { title: '分类', dataIndex: 'category_id', width: 120, render: (cid: number) => categories.find((c) => c.id === cid)?.name ?? cid },
           {
             title: '状态',
             dataIndex: 'status',
