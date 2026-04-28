@@ -25,10 +25,15 @@ export interface RefreshData {
   expires_in: number
 }
 
-export interface EndUser {
+export interface AdminUser {
   id: number
   username: string
-  email: string
+  nickname: string | null
+  role: string
+  status: number
+  last_login_at: string | null
+  created_at: string
+  updated_at: string
 }
 
 export interface Tag {

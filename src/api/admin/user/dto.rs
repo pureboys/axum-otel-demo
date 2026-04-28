@@ -1,33 +1,52 @@
 use serde::{Deserialize, Serialize};
 
-/// 创建用户请求
+/// 创建管理员请求
 #[derive(Debug, Deserialize, Serialize)]
-pub struct CreateUserRequest {
+pub struct CreateAdminRequest {
     pub username: String,
-    pub email: String,
+    pub password: String,
+    pub nickname: Option<String>,
+    pub role: Option<String>,
 }
 
-/// 更新用户请求
+/// 更新管理员请求
 #[derive(Debug, Deserialize, Serialize)]
-pub struct UpdateUserRequest {
-    pub username: Option<String>,
-    pub email: Option<String>,
+pub struct UpdateAdminRequest {
+    pub nickname: Option<String>,
+    pub role: Option<String>,
+    pub status: Option<i8>,
 }
 
-/// 用户响应
+/// 修改密码请求
+#[derive(Debug, Deserialize, Serialize)]
+pub struct ChangePasswordRequest {
+    pub new_password: String,
+}
+
+/// 管理员响应
 #[derive(Debug, Serialize)]
-pub struct UserResponse {
+pub struct AdminUserResponse {
     pub id: i32,
     pub username: String,
-    pub email: String,
+    pub nickname: Option<String>,
+    pub role: String,
+    pub status: i8,
+    pub last_login_at: Option<String>,
+    pub created_at: String,
+    pub updated_at: String,
 }
 
-impl From<crate::models::user::Model> for UserResponse {
-    fn from(model: crate::models::user::Model) -> Self {
+impl From<crate::models::admin::Model> for AdminUserResponse {
+    fn from(model: crate::models::admin::Model) -> Self {
         Self {
             id: model.id,
             username: model.username,
-            email: model.email,
+            nickname: model.nickname,
+            role: model.role,
+            status: model.status,
+            last_login_at: model.last_login_at.map(|t| t.to_string()),
+            created_at: model.created_at.to_string(),
+            updated_at: model.updated_at.to_string(),
         }
     }
 }

@@ -15,7 +15,7 @@ import { useAuth } from '../context/useAuth'
 const { Header, Sider, Content } = Layout
 
 const menuItems: MenuProps['items'] = [
-  { key: '/users', icon: <UserOutlined />, label: '用户管理' },
+  { key: '/admins', icon: <UserOutlined />, label: '管理员管理' },
   { key: '/tags', icon: <TagsOutlined />, label: '标签管理' },
   { key: '/categories', icon: <FolderOutlined />, label: '分类管理' },
   { key: '/products', icon: <ShoppingOutlined />, label: '产品管理' },

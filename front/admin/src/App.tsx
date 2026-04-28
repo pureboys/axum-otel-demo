@@ -25,8 +25,8 @@ export default function App() {
             </ProtectedRoute>
           }
         >
-          <Route path="/" element={<Navigate to="/users" replace />} />
-          <Route path="/users" element={<UsersPage />} />
+          <Route path="/" element={<Navigate to="/admins" replace />} />
+          <Route path="/admins" element={<UsersPage />} />
           <Route path="/tags" element={<TagsPage />} />
           <Route path="/categories" element={<CategoriesPage />} />
           <Route path="/products/new" element={<ProductDetailPage />} />
@@ -39,7 +39,7 @@ export default function App() {
           <Route path="/site-pages/:id" element={<SitePageDetailPage />} />
           <Route path="/site-pages" element={<SitePagesPage />} />
         </Route>
-        <Route path="*" element={<Navigate to="/users" replace />} />
+        <Route path="*" element={<Navigate to="/admins" replace />} />
       </Routes>
     </AuthProvider>
   )

@@ -144,9 +144,9 @@ Authorization: Bearer <token>
 
 ---
 
-## 用户管理 `/api/admin/users`
+## 管理员管理 `/api/admin/admins`
 
-### GET /users - 获取所有用户
+### GET /admins - 获取所有管理员
 
 **响应示例**
 
@@ -157,20 +157,25 @@ Authorization: Bearer <token>
   "data": [
     {
       "id": 1,
-      "username": "user1",
-      "email": "user1@example.com"
+      "username": "admin",
+      "nickname": "系统管理员",
+      "role": "super_admin",
+      "status": 1,
+      "last_login_at": "2024-03-18 10:00:00",
+      "created_at": "2024-03-18 10:00:00",
+      "updated_at": "2024-03-18 10:00:00"
     }
   ]
 }
 ```
 
-### GET /users/{id} - 获取用户详情
+### GET /admins/{id} - 获取管理员详情
 
 **路径参数**
 
 | 参数名 | 类型 | 说明 |
 |--------|------|------|
-| id | int | 用户ID |
+| id | int | 管理员ID |
 
 **响应示例**
 
@@ -180,27 +185,36 @@ Authorization: Bearer <token>
   "msg": "",
   "data": {
     "id": 1,
-    "username": "user1",
-    "email": "user1@example.com"
+    "username": "admin",
+    "nickname": "系统管理员",
+    "role": "super_admin",
+    "status": 1,
+    "last_login_at": "2024-03-18 10:00:00",
+    "created_at": "2024-03-18 10:00:00",
+    "updated_at": "2024-03-18 10:00:00"
   }
 }
 ```
 
-### POST /users - 创建用户
+### POST /admins - 创建管理员
 
 **请求参数**
 
 | 参数名 | 类型 | 必填 | 说明 |
 |--------|------|------|------|
 | username | string | 是 | 用户名 |
-| email | string | 是 | 邮箱 |
+| password | string | 是 | 密码（明文，后端加密存储） |
+| nickname | string | 否 | 昵称 |
+| role | string | 否 | 角色：`admin`（默认）、`super_admin` |
 
 **请求示例**
 
 ```json
 {
-  "username": "newuser",
-  "email": "newuser@example.com"
+  "username": "editor",
+  "password": "secret123",
+  "nickname": "编辑员",
+  "role": "admin"
 }
 ```
 
@@ -212,37 +226,76 @@ Authorization: Bearer <token>
   "msg": "",
   "data": {
     "id": 2,
-    "username": "newuser",
-    "email": "newuser@example.com"
+    "username": "editor",
+    "nickname": "编辑员",
+    "role": "admin",
+    "status": 1,
+    "last_login_at": null,
+    "created_at": "2024-03-18 10:00:00",
+    "updated_at": "2024-03-18 10:00:00"
   }
 }
 ```
 
-### PUT /users/{id} - 更新用户
+### PUT /admins/{id} - 更新管理员
 
 **路径参数**
 
 | 参数名 | 类型 | 说明 |
 |--------|------|------|
-| id | int | 用户ID |
+| id | int | 管理员ID |
 
 **请求参数**
 
 | 参数名 | 类型 | 必填 | 说明 |
 |--------|------|------|------|
-| username | string | 否 | 用户名 |
-| email | string | 否 | 邮箱 |
+| nickname | string | 否 | 昵称 |
+| role | string | 否 | 角色：`admin`、`super_admin` |
+| status | int | 否 | 状态：`1`-启用，`0`-禁用 |
 
 **请求示例**
 
 ```json
 {
-  "username": "updated_user",
-  "email": "updated@example.com"
+  "nickname": "高级编辑",
+  "role": "admin",
+  "status": 1
 }
 ```
 
-### DELETE /users/{id} - 删除用户
+### PUT /admins/{id}/password - 修改管理员密码
+
+**路径参数**
+
+| 参数名 | 类型 | 说明 |
+|--------|------|------|
+| id | int | 管理员ID |
+
+**请求参数**
+
+| 参数名 | 类型 | 必填 | 说明 |
+|--------|------|------|------|
+| new_password | string | 是 | 新密码（明文，后端加密存储） |
+
+**请求示例**
+
+```json
+{
+  "new_password": "newSecret123"
+}
+```
+
+**响应示例**
+
+```json
+{
+  "code": 0,
+  "msg": "",
+  "data": null
+}
+```
+
+### DELETE /admins/{id} - 删除管理员
 
 **响应示例**
 

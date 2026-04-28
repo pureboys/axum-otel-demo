@@ -1,10 +1,10 @@
 import type {
   ApiResponse,
   AdminProfile,
+  AdminUser,
   Category,
   CategoryType,
   CmsPage,
-  EndUser,
   LoginData,
   NewsItem,
   Paginated,
@@ -34,16 +34,16 @@ function readFileAsDataUrl(file: File): Promise<string> {
 
 const ts = '2024-03-18 10:00:00'
 
-let nextUserId = 3
+let nextAdminId = 3
 let nextTagId = 3
 let nextCatId = 3
 let nextProductId = 2
 let nextNewsId = 2
 let nextPageId = 2
 
-const users: EndUser[] = [
-  { id: 1, username: 'user1', email: 'user1@example.com' },
-  { id: 2, username: 'user2', email: 'user2@example.com' },
+const adminUsers: AdminUser[] = [
+  { id: 1, username: 'admin', nickname: '系统管理员', role: 'super_admin', status: 1, last_login_at: ts, created_at: ts, updated_at: ts },
+  { id: 2, username: 'editor', nickname: '编辑员', role: 'admin', status: 1, last_login_at: null, created_at: ts, updated_at: ts },
 ]
 
 const tags: Tag[] = [
@@ -183,40 +183,59 @@ export const mockServer = {
     })
   },
 
-  async listUsers(): Promise<ApiResponse<EndUser[]>> {
+  async listAdmins(): Promise<ApiResponse<AdminUser[]>> {
     await sleep(200)
-    return ok([...users])
+    return ok([...adminUsers])
   },
 
-  async getUser(id: number): Promise<ApiResponse<EndUser>> {
+  async getAdmin(id: number): Promise<ApiResponse<AdminUser>> {
     await sleep(150)
-    const u = users.find((x) => x.id === id)
-    if (!u) return fail(404, '资源不存在', null as unknown as EndUser)
+    const u = adminUsers.find((x) => x.id === id)
+    if (!u) return fail(404, '资源不存在', null as unknown as AdminUser)
     return ok({ ...u })
   },
 
-  async createUser(body: { username: string; email: string }): Promise<ApiResponse<EndUser>> {
+  async createAdmin(body: { username: string; password: string; nickname?: string; role?: string }): Promise<ApiResponse<AdminUser>> {
     await sleep(200)
-    if (!body.username?.trim() || !body.email?.trim()) return fail(400, '请求参数错误', null as unknown as EndUser)
-    const u: EndUser = { id: nextUserId++, username: body.username.trim(), email: body.email.trim() }
-    users.push(u)
+    if (!body.username?.trim() || !body.password?.trim()) return fail(400, '请求参数错误', null as unknown as AdminUser)
+    const now = new Date().toISOString().slice(0, 19).replace('T', ' ')
+    const u: AdminUser = {
+      id: nextAdminId++,
+      username: body.username.trim(),
+      nickname: body.nickname?.trim() ?? null,
+      role: body.role ?? 'admin',
+      status: 1,
+      last_login_at: null,
+      created_at: now,
+      updated_at: now,
+    }
+    adminUsers.push(u)
     return ok({ ...u })
   },
 
-  async updateUser(id: number, body: Partial<Pick<EndUser, 'username' | 'email'>>): Promise<ApiResponse<EndUser>> {
+  async updateAdmin(id: number, body: { nickname?: string | null; role?: string; status?: number }): Promise<ApiResponse<AdminUser>> {
     await sleep(200)
-    const u = users.find((x) => x.id === id)
-    if (!u) return fail(404, '资源不存在', null as unknown as EndUser)
-    if (body.username != null) u.username = body.username
-    if (body.email != null) u.email = body.email
+    const u = adminUsers.find((x) => x.id === id)
+    if (!u) return fail(404, '资源不存在', null as unknown as AdminUser)
+    if (body.nickname !== undefined) u.nickname = body.nickname
+    if (body.role != null) u.role = body.role
+    if (body.status != null) u.status = body.status
+    u.updated_at = new Date().toISOString().slice(0, 19).replace('T', ' ')
     return ok({ ...u })
   },
 
-  async deleteUser(id: number): Promise<ApiResponse<null>> {
+  async changeAdminPassword(id: number, _newPassword: string): Promise<ApiResponse<null>> {
+    await sleep(200)
+    const u = adminUsers.find((x) => x.id === id)
+    if (!u) return fail(404, '资源不存在')
+    return ok(null)
+  },
+
+  async deleteAdmin(id: number): Promise<ApiResponse<null>> {
     await sleep(150)
-    const i = users.findIndex((x) => x.id === id)
+    const i = adminUsers.findIndex((x) => x.id === id)
     if (i === -1) return fail(404, '资源不存在')
-    users.splice(i, 1)
+    adminUsers.splice(i, 1)
     return ok(null)
   },
 

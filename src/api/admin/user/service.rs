@@ -1,60 +1,85 @@
 use crate::app::AppState;
 use crate::error::AppError;
-use crate::repositories::user::UserRepository;
-use super::dto::{CreateUserRequest, UpdateUserRequest, UserResponse};
+use crate::repositories::admin::AdminRepository;
+use super::dto::{AdminUserResponse, CreateAdminRequest, UpdateAdminRequest};
 
-pub struct UserService;
+pub struct AdminUserService;
 
-impl UserService {
-    /// 获取所有用户
-    pub async fn list_users(state: &AppState) -> Result<Vec<UserResponse>, AppError> {
-        let users = UserRepository::find_all(&state.db)
+impl AdminUserService {
+    /// 获取所有管理员
+    pub async fn list_admins(state: &AppState) -> Result<Vec<AdminUserResponse>, AppError> {
+        let admins = AdminRepository::find_all(&state.db)
             .await
             .map_err(AppError::from)?;
-        Ok(users.into_iter().map(UserResponse::from).collect())
+        Ok(admins.into_iter().map(AdminUserResponse::from).collect())
     }
 
-    /// 获取用户详情
-    pub async fn get_user(state: &AppState, id: i32) -> Result<UserResponse, AppError> {
-        let user = UserRepository::find_by_id(&state.db, id)
+    /// 获取管理员详情
+    pub async fn get_admin(state: &AppState, id: i32) -> Result<AdminUserResponse, AppError> {
+        let admin = AdminRepository::find_by_id(&state.db, id)
             .await
             .map_err(AppError::from)?
-            .ok_or(AppError::NotFound("用户不存在".to_string()))?;
-        Ok(UserResponse::from(user))
+            .ok_or(AppError::NotFound("管理员不存在".to_string()))?;
+        Ok(AdminUserResponse::from(admin))
     }
 
-    /// 创建用户
-    pub async fn create_user(
+    /// 创建管理员
+    pub async fn create_admin(
         state: &AppState,
-        req: CreateUserRequest,
-    ) -> Result<UserResponse, AppError> {
-        let user = UserRepository::create(&state.db, req.username, req.email)
+        req: CreateAdminRequest,
+    ) -> Result<AdminUserResponse, AppError> {
+        let password_hash = bcrypt::hash(&req.password, bcrypt::DEFAULT_COST)
+            .map_err(|_| AppError::Internal("密码加密失败".to_string()))?;
+        let role = req.role.unwrap_or_else(|| "admin".to_string());
+        let admin = AdminRepository::create(&state.db, req.username, password_hash, req.nickname, role)
             .await
             .map_err(AppError::from)?;
-        Ok(UserResponse::from(user))
+        Ok(AdminUserResponse::from(admin))
     }
 
-    /// 更新用户
-    pub async fn update_user(
+    /// 更新管理员
+    pub async fn update_admin(
         state: &AppState,
         id: i32,
-        req: UpdateUserRequest,
-    ) -> Result<UserResponse, AppError> {
-        let existing = UserRepository::find_by_id(&state.db, id)
+        req: UpdateAdminRequest,
+    ) -> Result<AdminUserResponse, AppError> {
+        let existing = AdminRepository::find_by_id(&state.db, id)
             .await
             .map_err(AppError::from)?
-            .ok_or(AppError::NotFound("用户不存在".to_string()))?;
+            .ok_or(AppError::NotFound("管理员不存在".to_string()))?;
 
-        let active_model = existing.into();
-        let user = UserRepository::update(&state.db, active_model, req.username, req.email)
+        use sea_orm::IntoActiveModel;
+        let active_model = existing.into_active_model();
+        let admin = AdminRepository::update(&state.db, active_model, req.nickname, req.role, req.status)
             .await
             .map_err(AppError::from)?;
-        Ok(UserResponse::from(user))
+        Ok(AdminUserResponse::from(admin))
     }
 
-    /// 删除用户
-    pub async fn delete_user(state: &AppState, id: i32) -> Result<(), AppError> {
-        UserRepository::delete(&state.db, id)
+    /// 修改管理员密码
+    pub async fn change_password(
+        state: &AppState,
+        id: i32,
+        new_password: &str,
+    ) -> Result<(), AppError> {
+        let existing = AdminRepository::find_by_id(&state.db, id)
+            .await
+            .map_err(AppError::from)?
+            .ok_or(AppError::NotFound("管理员不存在".to_string()))?;
+
+        let password_hash = bcrypt::hash(new_password, bcrypt::DEFAULT_COST)
+            .map_err(|_| AppError::Internal("密码加密失败".to_string()))?;
+
+        use sea_orm::{ActiveModelTrait, ActiveValue::Set, IntoActiveModel};
+        let mut active_model = existing.into_active_model();
+        active_model.password_hash = Set(password_hash);
+        let _: crate::models::admin::Model = active_model.update(&state.db).await.map_err(AppError::from)?;
+        Ok(())
+    }
+
+    /// 删除管理员
+    pub async fn delete_admin(state: &AppState, id: i32) -> Result<(), AppError> {
+        AdminRepository::delete(&state.db, id)
             .await
             .map_err(AppError::from)?;
         Ok(())
